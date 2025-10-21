@@ -36,21 +36,27 @@ function App() {
         setLoadingShared(true);
         
         try {
+          console.log('Loading shared stack:', shareId);
           // Load from Firebase
           const stackRef = ref(database, `shared-stacks/${shareId}`);
           const snapshot = await get(stackRef);
           
+          console.log('Snapshot exists:', snapshot.exists());
+          
           if (snapshot.exists()) {
             const sharedStackData = snapshot.val();
+            console.log('Loaded shared stack:', sharedStackData);
             setSharedStack(sharedStackData);
           } else {
+            console.error('Share ID not found:', shareId);
             alert('This shared link is not valid or has expired.');
-            window.history.pushState({}, '', '/');
+            window.location.href = '/';
           }
         } catch (error) {
           console.error('Error loading shared stack:', error);
-          alert('Failed to load shared receipt. Please check your internet connection.');
-          window.history.pushState({}, '', '/');
+          console.error('Error details:', error.message, error.code);
+          alert(`Failed to load shared receipt: ${error.message}\n\nPlease check that Firebase Realtime Database is enabled.`);
+          window.location.href = '/';
         } finally {
           setLoadingShared(false);
         }
