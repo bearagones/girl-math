@@ -36,9 +36,22 @@ Add these 7 environment variables **one by one**:
 7. **Variable Name:** `REACT_APP_FIREBASE_APP_ID`
    **Value:** `1:618214011459:web:215740629e9f0878055af6`
 
-### Step 3: Redeploy
+### Step 3: Commit and Push the Routing Fix
 
-After adding all variables:
+**IMPORTANT:** I just created a `vercel.json` file that fixes the routing issue!
+
+This file tells Vercel to route all URLs to `index.html` so React can handle the routing.
+
+1. Commit the new file:
+```bash
+git add vercel.json
+git commit -m "Add vercel.json for SPA routing"
+git push
+```
+
+2. Vercel will automatically deploy the new changes
+
+OR manually redeploy:
 1. Go to **Deployments** tab
 2. Click the **3 dots** (⋯) next to the latest deployment
 3. Click **Redeploy**
