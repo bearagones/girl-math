@@ -12,20 +12,63 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showStackManager, setShowStackManager] = useState(false);
 
-  // Check for shared receipt in URL
+  // Check for receipt ID in URL path
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedData = urlParams.get('receipt');
+    const path = window.location.pathname;
+    const receiptIdMatch = path.match(/^\/(\d+)$/);
     
-    if (sharedData) {
-      try {
-        const decodedReceipt = JSON.parse(decodeURIComponent(atob(sharedData)));
-        setSharedReceipt(decodedReceipt);
-      } catch (e) {
-        console.error('Failed to decode shared receipt:', e);
+    if (receiptIdMatch) {
+      const receiptId = receiptIdMatch[1];
+      // Try to find the receipt in saved stacks
+      const savedStacks = localStorage.getItem('girlMathStacks');
+      if (savedStacks) {
+        try {
+          const parsed = JSON.parse(savedStacks);
+          let foundReceipt = null;
+          
+          // Search for receipt across all stacks
+          for (const stack of parsed) {
+            const receipt = stack.receipts.find(r => r.id.toString() === receiptId);
+            if (receipt && receipt.isCompleted) {
+              foundReceipt = receipt;
+              break;
+            }
+          }
+          
+          if (foundReceipt) {
+            setSharedReceipt(foundReceipt);
+          } else {
+            // Receipt not found, redirect to home
+            window.history.pushState({}, '', '/');
+          }
+        } catch (e) {
+          console.error('Failed to load receipt:', e);
+          window.history.pushState({}, '', '/');
+        }
       }
     }
   }, []);
+
+  // Update URL when viewing a completed receipt
+  useEffect(() => {
+    if (!sharedReceipt && stacks.length > 0) {
+      const currentReceipts = getCurrentReceipts();
+      const currentReceipt = currentReceipts[currentReceiptIndex];
+      
+      if (currentReceipt && currentReceipt.isCompleted) {
+        // Update URL to include receipt ID
+        const newPath = `/${currentReceipt.id}`;
+        if (window.location.pathname !== newPath) {
+          window.history.pushState({}, '', newPath);
+        }
+      } else {
+        // Clear URL for non-completed receipts
+        if (window.location.pathname !== '/') {
+          window.history.pushState({}, '', '/');
+        }
+      }
+    }
+  }, [currentReceiptIndex, stacks, currentStackIndex, sharedReceipt]);
 
   // Load saved stacks from localStorage
   useEffect(() => {
