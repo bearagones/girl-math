@@ -21,6 +21,7 @@ function App() {
   const [currentStackIndex, setCurrentStackIndex] = useState(0);
   const [currentReceiptIndex, setCurrentReceiptIndex] = useState(0);
   const [sharedStack, setSharedStack] = useState(null);
+  const [sharedReceiptIndex, setSharedReceiptIndex] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const [showStackManager, setShowStackManager] = useState(false);
   const [loadingShared, setLoadingShared] = useState(false);
@@ -364,20 +365,28 @@ function App() {
       completedReceipts: sharedStack.receipts
     };
 
+    const sharedTotalCards = sharedStack.receipts.length + 1; // receipts + overall balance
+
     return (
       <div className="app">
         <ReceiptCarousel
           receipts={sharedStack.receipts}
-          currentIndex={0}
+          currentIndex={sharedReceiptIndex}
           onUpdateReceipt={() => {}}
           onDeleteReceipt={() => {}}
-          onNavigate={() => {}}
+          onNavigate={(index) => setSharedReceiptIndex(index)}
           friends={friends}
           overallBalanceData={sharedOverallData}
           isReadOnly={true}
           stackName={sharedStack.stackName}
         />
         
+        <div className="receipt-counter">
+          {sharedStack.stackName || 'Shared Receipt'}
+          <br />
+          {sharedReceiptIndex + 1} / {sharedTotalCards}
+        </div>
+
         <button 
           className="back-to-app-btn"
           onClick={() => {
