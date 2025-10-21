@@ -12,10 +12,28 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Check if Firebase is configured
+const isFirebaseConfigured = firebaseConfig.apiKey && 
+                             firebaseConfig.authDomain && 
+                             firebaseConfig.projectId;
 
-// Initialize Realtime Database and get a reference to the service
-const database = getDatabase(app);
+let app = null;
+let database = null;
 
-export { database };
+if (isFirebaseConfigured) {
+  try {
+    // Initialize Firebase
+    app = initializeApp(firebaseConfig);
+    // Initialize Realtime Database
+    database = getDatabase(app);
+    console.log('✅ Firebase initialized successfully');
+  } catch (error) {
+    console.error('❌ Firebase initialization error:', error);
+  }
+} else {
+  console.warn('⚠️ Firebase not configured. Environment variables are missing.');
+  console.warn('The app will work locally but sharing features will be disabled.');
+  console.warn('To enable Firebase, add environment variables to Vercel.');
+}
+
+export { database, isFirebaseConfigured };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReceiptCarousel from './components/ReceiptCarousel';
 import ReceiptHistory from './components/ReceiptHistory';
-import { database } from './firebase';
+import { database, isFirebaseConfigured } from './firebase';
 import { ref, set, get } from 'firebase/database';
 
 const friends = ['beatrice', 'farin', 'tiffany', 'monica', 'andrew', 'marisa'];
@@ -32,6 +32,12 @@ function App() {
       const shareIdMatch = path.match(/^\/([A-Z0-9]{6})$/);
       
       if (shareIdMatch) {
+        if (!isFirebaseConfigured || !database) {
+          alert('Firebase is not configured. Unable to load shared receipts.\n\nThe app owner needs to add Firebase environment variables.');
+          window.location.href = '/';
+          return;
+        }
+
         const shareId = shareIdMatch[1];
         setLoadingShared(true);
         
@@ -279,6 +285,11 @@ function App() {
 
   // Function to share current stack to Firebase
   const shareCurrentStack = async () => {
+    if (!isFirebaseConfigured || !database) {
+      alert('Firebase is not configured. Sharing features are not available.\n\nPlease configure Firebase environment variables to enable sharing.');
+      return null;
+    }
+
     const stack = getCurrentStack();
     const completedReceipts = stack.receipts.filter(r => r.isCompleted);
     
