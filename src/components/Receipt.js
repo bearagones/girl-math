@@ -3,11 +3,22 @@ import FriendSection from './FriendSection';
 import SharedItems from './SharedItems';
 import ReceiptTotals from './ReceiptTotals';
 
-function Receipt({ receipt, friends, onUpdate, onDelete, isActive }) {
+function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = false }) {
   const [localReceipt, setLocalReceipt] = useState(receipt);
   const [showResults, setShowResults] = useState(false);
   const [splits, setSplits] = useState({});
   const [showFriendManager, setShowFriendManager] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareLink, setShareLink] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  // If receipt is completed or in read-only mode, show the results
+  useEffect(() => {
+    if ((localReceipt.isCompleted || isReadOnly) && localReceipt.splits) {
+      setSplits(localReceipt.splits);
+      setShowResults(true);
+    }
+  }, [localReceipt.isCompleted, localReceipt.splits, isReadOnly]);
 
   useEffect(() => {
     setLocalReceipt(receipt);
@@ -263,6 +274,64 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive }) {
     return localReceipt.activeFriends || friends;
   };
 
+  const generateShareLink = () => {
+    if (!localReceipt.isCompleted) {
+      alert('Please save the receipt before sharing.');
+      return;
+    }
+
+    try {
+      // Create a clean version of the receipt for sharing
+      const shareData = {
+        subject: localReceipt.subject,
+        activeFriends: localReceipt.activeFriends,
+        individualItems: localReceipt.individualItems,
+        sharedItems: localReceipt.sharedItems,
+        subtotal: localReceipt.subtotal,
+        taxes: localReceipt.taxes,
+        tip: localReceipt.tip,
+        total: localReceipt.total,
+        payer: localReceipt.payer,
+        splits: localReceipt.splits,
+        isCompleted: true,
+        timestamp: localReceipt.timestamp
+      };
+
+      // Encode the receipt data
+      const encodedData = btoa(encodeURIComponent(JSON.stringify(shareData)));
+      const baseUrl = window.location.origin + window.location.pathname;
+      const link = `${baseUrl}?receipt=${encodedData}`;
+      
+      setShareLink(link);
+      setShowShareModal(true);
+    } catch (e) {
+      console.error('Failed to generate share link:', e);
+      alert('Failed to generate share link. The receipt might be too large.');
+    }
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = shareLink;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (e) {
+        alert('Failed to copy link. Please copy it manually.');
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
   return (
     <div className="receipt-card-content">
       {/* Receipt Header */}
@@ -281,38 +350,42 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive }) {
             placeholder="Subject"
             value={localReceipt.subject}
             onChange={(e) => updateLocalReceipt({ subject: e.target.value })}
+            readOnly={isReadOnly}
+            disabled={isReadOnly}
           />
         </div>
 
         {/* Friend Management Section */}
-        <div className="friend-management-section">
-          <button 
-            className="friend-manager-toggle"
-            onClick={() => setShowFriendManager(!showFriendManager)}
-          >
-            👥 Manage Friends ({getActiveFriends().length}/{friends.length})
-          </button>
-          
-          {showFriendManager && (
-            <div className="friend-manager">
-              <div className="friend-manager-title">Select friends for this hangout:</div>
-              <div className="friend-checkboxes">
-                {friends.map(friend => (
-                  <label key={friend} className="friend-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={getActiveFriends().includes(friend)}
-                      onChange={() => toggleFriend(friend)}
-                    />
-                    <span className={`friend-checkbox-label ${friend}`}>
-                      {friend.charAt(0).toUpperCase() + friend.slice(1)}
-                    </span>
-                  </label>
-                ))}
+        {!isReadOnly && (
+          <div className="friend-management-section">
+            <button 
+              className="friend-manager-toggle"
+              onClick={() => setShowFriendManager(!showFriendManager)}
+            >
+              👥 Manage Friends ({getActiveFriends().length}/{friends.length})
+            </button>
+            
+            {showFriendManager && (
+              <div className="friend-manager">
+                <div className="friend-manager-title">Select friends for this hangout:</div>
+                <div className="friend-checkboxes">
+                  {friends.map(friend => (
+                    <label key={friend} className="friend-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={getActiveFriends().includes(friend)}
+                        onChange={() => toggleFriend(friend)}
+                      />
+                      <span className={`friend-checkbox-label ${friend}`}>
+                        {friend.charAt(0).toUpperCase() + friend.slice(1)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Friends Section */}
         <div className="friends-section">
@@ -351,26 +424,63 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive }) {
         />
 
         {/* Action Buttons */}
-        <div className="actions">
-          <button 
-            className="action-btn calculate-btn" 
-            onClick={calculateSplit}
-          >
-            Calculate Split
-          </button>
-          <button 
-            className="action-btn save-btn" 
-            onClick={saveReceipt}
-          >
-            Save Receipt
-          </button>
-          <button 
-            className="action-btn clear-btn" 
-            onClick={clearForm}
-          >
-            Clear Form
-          </button>
-        </div>
+        {!isReadOnly && (
+          <div className="actions">
+            <button 
+              className="action-btn calculate-btn" 
+              onClick={calculateSplit}
+            >
+              Calculate Split
+            </button>
+            <button 
+              className="action-btn save-btn" 
+              onClick={saveReceipt}
+            >
+              Save Receipt
+            </button>
+            <button 
+              className="action-btn clear-btn" 
+              onClick={clearForm}
+            >
+              Clear Form
+            </button>
+          </div>
+        )}
+
+        {/* Share Button - only show for completed receipts */}
+        {localReceipt.isCompleted && !isReadOnly && (
+          <div className="actions">
+            <button 
+              className="action-btn share-btn" 
+              onClick={generateShareLink}
+            >
+              📤 Share Receipt
+            </button>
+          </div>
+        )}
+
+        {/* Delete Button - always available (except in read-only mode) */}
+        {!isReadOnly && (
+          <div className="actions">
+            <button 
+              className="action-btn delete-receipt-btn" 
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete this receipt? This action cannot be undone.')) {
+                  onDelete();
+                }
+              }}
+            >
+              🗑️ Delete Receipt
+            </button>
+          </div>
+        )}
+
+        {/* Read-only indicator */}
+        {isReadOnly && (
+          <div className="readonly-banner">
+            <p>🔍 You are viewing a shared receipt (read-only)</p>
+          </div>
+        )}
 
         {/* Results Section */}
         {showResults && (
@@ -399,6 +509,79 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive }) {
                 );
               }
             })}
+          </div>
+        )}
+
+        {/* Payment Tracking Section - only show for completed receipts */}
+        {localReceipt.isCompleted && !isReadOnly && (
+          <div className="payment-tracking-section">
+            <div className="section-title">💰 Payment Status</div>
+            <div className="payment-checklist">
+              {friends.map(friend => {
+                const amount = splits[friend] || 0;
+                if (amount <= 0.01 || friend === localReceipt.payer) return null;
+                
+                const friendName = friend.charAt(0).toUpperCase() + friend.slice(1);
+                const hasPaid = localReceipt.payments?.[friend] || false;
+                
+                return (
+                  <label key={friend} className={`payment-checkbox-item ${hasPaid ? 'paid' : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={hasPaid}
+                      onChange={(e) => {
+                        const updatedPayments = {
+                          ...localReceipt.payments,
+                          [friend]: e.target.checked
+                        };
+                        updateLocalReceipt({ payments: updatedPayments });
+                      }}
+                    />
+                    <span className="payment-friend-name">{friendName}</span>
+                    <span className="payment-amount">${amount.toFixed(2)}</span>
+                    {hasPaid && <span className="paid-badge">✓ Paid</span>}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Share Modal */}
+        {showShareModal && (
+          <div className="share-modal-overlay" onClick={() => setShowShareModal(false)}>
+            <div className="share-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="share-modal-header">
+                <h3>📤 Share Receipt</h3>
+                <button 
+                  className="close-modal-btn"
+                  onClick={() => setShowShareModal(false)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="share-modal-body">
+                <p>Share this link with your friends so they can view the receipt:</p>
+                <div className="share-link-container">
+                  <input
+                    type="text"
+                    value={shareLink}
+                    readOnly
+                    className="share-link-input"
+                    onClick={(e) => e.target.select()}
+                  />
+                  <button 
+                    className="copy-btn"
+                    onClick={copyToClipboard}
+                  >
+                    {copySuccess ? '✓ Copied!' : '📋 Copy'}
+                  </button>
+                </div>
+                <p className="share-note">
+                  💡 Anyone with this link can view the receipt details and split calculations.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>

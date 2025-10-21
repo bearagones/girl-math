@@ -9,7 +9,8 @@ function ReceiptCarousel({
   onDeleteReceipt, 
   onNavigate, 
   friends,
-  overallBalanceData
+  overallBalanceData,
+  isReadOnly = false
 }) {
   // Create combined array of receipts + overall balance card
   const allCards = [...receipts];
@@ -79,6 +80,7 @@ function ReceiptCarousel({
               onUpdate={(updatedReceipt) => onUpdateReceipt(index, updatedReceipt)}
               onDelete={() => onDeleteReceipt(index)}
               isActive={index === currentIndex}
+              isReadOnly={isReadOnly}
             />
           )}
         </div>

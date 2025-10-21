@@ -606,6 +606,54 @@ body {
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
 }
 
+/* History Button */
+.history-btn {
+  position: fixed;
+  right: 460px;
+  top: calc(50% + 80px);
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #5a67d8);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.history-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+}
+
+/* Stack Manager Button */
+.stack-manager-btn {
+  position: fixed;
+  right: 460px;
+  top: calc(50% + 160px);
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #28a745, #20893b);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.stack-manager-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+}
+
 /* Receipt Counter */
 .receipt-counter {
   position: absolute;
@@ -812,6 +860,578 @@ body {
 .stat-item span:last-child {
   font-weight: 600;
   color: #333;
+}
+
+/* Share Button */
+.share-btn {
+  background: #667eea;
+  color: white;
+}
+
+.share-btn:hover {
+  background: #5a67d8;
+}
+
+/* Delete Receipt Button */
+.delete-receipt-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.delete-receipt-btn:hover {
+  background: #c82333;
+}
+
+/* Share Modal */
+.share-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.share-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.share-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.share-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.close-modal-btn:hover {
+  background: #f8f9fa;
+}
+
+.share-modal-body {
+  padding: 20px;
+}
+
+.share-modal-body p {
+  margin: 0 0 15px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.share-link-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.share-link-input {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: #f8f9fa;
+}
+
+.share-link-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+}
+
+.copy-btn {
+  padding: 10px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: #5a67d8;
+  transform: translateY(-1px);
+}
+
+.share-note {
+  font-size: 12px !important;
+  color: #888 !important;
+  font-style: italic;
+}
+
+/* Read-only Banner */
+.readonly-banner {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.readonly-banner p {
+  margin: 0;
+  color: #856404;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Back to App Button */
+.back-to-app-btn {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 12px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.back-to-app-btn:hover {
+  background: #5a67d8;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Payment Tracking Section */
+.payment-tracking-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+.payment-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 2px solid #e9ecef;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.payment-checkbox-item:hover {
+  border-color: #667eea;
+  transform: translateX(2px);
+}
+
+.payment-checkbox-item.paid {
+  background: #d4edda;
+  border-color: #28a745;
+}
+
+.payment-checkbox-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.payment-friend-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.payment-amount {
+  font-weight: 700;
+  color: #dc3545;
+  margin-right: 12px;
+  font-size: 14px;
+}
+
+.payment-checkbox-item.paid .payment-amount {
+  color: #28a745;
+  text-decoration: line-through;
+}
+
+.paid-badge {
+  background: #28a745;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Receipt History */
+.history-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.history-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid #e9ecef;
+  background: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+}
+
+.history-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+}
+
+.history-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.no-history {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.no-history p {
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.history-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid #e9ecef;
+}
+
+.history-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.history-item.all-paid {
+  background: #d4edda;
+  border-color: #28a745;
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.history-item-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.all-paid-badge {
+  background: #28a745;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.history-item-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+
+.history-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-weight: 700;
+  color: #333;
+}
+
+.payment-status {
+  font-weight: 600;
+}
+
+.payment-status.complete {
+  color: #28a745;
+}
+
+.payment-status.pending {
+  color: #dc3545;
+}
+
+.history-item-footer {
+  text-align: right;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #ddd;
+}
+
+.view-receipt-link {
+  font-size: 12px;
+  color: #667eea;
+  font-weight: 600;
+}
+
+/* Stack Manager */
+.stack-manager-modal {
+  max-width: 700px;
+}
+
+.create-stack-btn {
+  width: 100%;
+  padding: 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+
+.create-stack-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.new-stack-form,
+.edit-stack-form {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 2px solid #28a745;
+}
+
+.stack-name-input,
+.stack-date-input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stack-name-input:focus,
+.stack-date-input:focus {
+  outline: none;
+  border-color: #28a745;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.save-stack-btn,
+.cancel-stack-btn {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-stack-btn {
+  background: #28a745;
+  color: white;
+}
+
+.save-stack-btn:hover {
+  background: #218838;
+}
+
+.cancel-stack-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-stack-btn:hover {
+  background: #5a6268;
+}
+
+.stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stack-item {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  border: 2px solid #e9ecef;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stack-item:hover {
+  border-color: #28a745;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stack-item.active-stack {
+  background: #d4edda;
+  border-color: #28a745;
+  border-width: 3px;
+}
+
+.stack-info {
+  flex: 1;
+  cursor: pointer;
+}
+
+.stack-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.stack-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: #666;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stack-date,
+.stack-receipts,
+.stack-completed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stack-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-stack-btn,
+.delete-stack-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f8f9fa;
+}
+
+.edit-stack-btn:hover {
+  background: #667eea;
+  transform: scale(1.1);
+}
+
+.delete-stack-btn:hover {
+  background: #dc3545;
+  transform: scale(1.1);
 }
 
 /* Responsive Design */

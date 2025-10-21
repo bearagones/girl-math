@@ -1,81 +1,197 @@
 import React, { useState, useEffect } from 'react';
 import ReceiptCarousel from './components/ReceiptCarousel';
+import ReceiptHistory from './components/ReceiptHistory';
 
 const friends = ['beatrice', 'farin', 'tiffany', 'monica', 'andrew', 'marisa'];
 
 function App() {
-  const [receipts, setReceipts] = useState([]);
+  const [stacks, setStacks] = useState([]); // Array of receipt stacks
+  const [currentStackIndex, setCurrentStackIndex] = useState(0);
   const [currentReceiptIndex, setCurrentReceiptIndex] = useState(0);
+  const [sharedReceipt, setSharedReceipt] = useState(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showStackManager, setShowStackManager] = useState(false);
 
-  // Initialize with one empty receipt
+  // Check for shared receipt in URL
   useEffect(() => {
-    if (receipts.length === 0) {
-      addNewReceipt();
-    }
-  }, []);
-
-  // Load saved receipts from localStorage
-  useEffect(() => {
-    const savedReceipts = localStorage.getItem('girlMathReceipts');
-    if (savedReceipts) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedData = urlParams.get('receipt');
+    
+    if (sharedData) {
       try {
-        const parsed = JSON.parse(savedReceipts);
-        if (parsed.length > 0) {
-          setReceipts(parsed);
-          setCurrentReceiptIndex(parsed.length - 1);
-        }
+        const decodedReceipt = JSON.parse(decodeURIComponent(atob(sharedData)));
+        setSharedReceipt(decodedReceipt);
       } catch (e) {
-        console.log('Could not load saved receipts');
+        console.error('Failed to decode shared receipt:', e);
       }
     }
   }, []);
 
-  // Save receipts to localStorage whenever receipts change
+  // Load saved stacks from localStorage
   useEffect(() => {
-    if (receipts.length > 0) {
-      localStorage.setItem('girlMathReceipts', JSON.stringify(receipts));
+    const savedStacks = localStorage.getItem('girlMathStacks');
+    if (savedStacks) {
+      try {
+        const parsed = JSON.parse(savedStacks);
+        if (parsed.length > 0) {
+          setStacks(parsed);
+          setCurrentStackIndex(parsed.length - 1);
+        } else {
+          createDefaultStack();
+        }
+      } catch (e) {
+        console.log('Could not load saved stacks');
+        createDefaultStack();
+      }
+    } else {
+      // Migrate old receipts data if it exists
+      const oldReceipts = localStorage.getItem('girlMathReceipts');
+      if (oldReceipts) {
+        try {
+          const parsed = JSON.parse(oldReceipts);
+          if (parsed.length > 0) {
+            const migratedStack = createStack('My Receipts', new Date().toISOString());
+            migratedStack.receipts = parsed;
+            setStacks([migratedStack]);
+            localStorage.setItem('girlMathStacks', JSON.stringify([migratedStack]));
+            localStorage.removeItem('girlMathReceipts'); // Clean up old data
+            return;
+          }
+        } catch (e) {
+          console.log('Could not migrate old receipts');
+        }
+      }
+      createDefaultStack();
     }
-  }, [receipts]);
+  }, []);
+
+  // Save stacks to localStorage whenever they change
+  useEffect(() => {
+    if (stacks.length > 0) {
+      localStorage.setItem('girlMathStacks', JSON.stringify(stacks));
+    }
+  }, [stacks]);
+
+  const createStack = (name, date) => ({
+    id: Date.now(),
+    name: name || 'New Hangout',
+    date: date || new Date().toISOString(),
+    receipts: [],
+    createdAt: new Date().toISOString()
+  });
+
+  const createDefaultStack = () => {
+    const defaultStack = createStack('My Receipts', new Date().toISOString());
+    defaultStack.receipts = [createEmptyReceipt()];
+    setStacks([defaultStack]);
+  };
 
   const createEmptyReceipt = () => ({
     id: Date.now(),
     subject: '',
-    activeFriends: [...friends], // Start with all friends active
+    activeFriends: [...friends],
     individualItems: friends.reduce((acc, friend) => {
       acc[friend] = [];
       return acc;
     }, {}),
     sharedItems: [],
     subtotal: 0,
+    taxes: 0,
     tip: 0,
     total: 0,
     payer: '',
     splits: {},
+    payments: {},
     timestamp: new Date().toISOString(),
     isCompleted: false
   });
 
-  const addNewReceipt = () => {
-    const newReceipt = createEmptyReceipt();
-    setReceipts(prev => [...prev, newReceipt]);
-    setCurrentReceiptIndex(receipts.length);
+  const getCurrentStack = () => stacks[currentStackIndex];
+  const getCurrentReceipts = () => getCurrentStack()?.receipts || [];
+
+  const addNewStack = (name, date) => {
+    const newStack = createStack(name, date);
+    newStack.receipts = [createEmptyReceipt()];
+    setStacks(prev => [...prev, newStack]);
+    setCurrentStackIndex(stacks.length);
+    setCurrentReceiptIndex(0);
   };
 
-  const updateReceipt = (index, updatedReceipt) => {
-    setReceipts(prev => prev.map((receipt, i) => 
-      i === index ? updatedReceipt : receipt
+  const updateStackInfo = (stackIndex, updates) => {
+    setStacks(prev => prev.map((stack, i) => 
+      i === stackIndex ? { ...stack, ...updates } : stack
     ));
   };
 
-  const deleteReceipt = (index) => {
-    if (receipts.length <= 1) return; // Keep at least one receipt
+  const deleteStack = (stackIndex) => {
+    if (stacks.length <= 1) {
+      alert('You must have at least one receipt stack.');
+      return;
+    }
     
-    setReceipts(prev => prev.filter((_, i) => i !== index));
+    if (window.confirm(`Delete "${stacks[stackIndex].name}"? All receipts in this stack will be deleted.`)) {
+      setStacks(prev => prev.filter((_, i) => i !== stackIndex));
+      if (currentStackIndex >= stacks.length - 1) {
+        setCurrentStackIndex(Math.max(0, stacks.length - 2));
+      }
+      setCurrentReceiptIndex(0);
+    }
+  };
+
+  const addNewReceipt = () => {
+    const newReceipt = createEmptyReceipt();
+    setStacks(prev => prev.map((stack, i) => 
+      i === currentStackIndex 
+        ? { ...stack, receipts: [...stack.receipts, newReceipt] }
+        : stack
+    ));
+    setCurrentReceiptIndex(getCurrentReceipts().length);
+  };
+
+  const updateReceipt = (receiptIndex, updatedReceipt) => {
+    setStacks(prev => prev.map((stack, i) => 
+      i === currentStackIndex 
+        ? {
+            ...stack,
+            receipts: stack.receipts.map((receipt, ri) => 
+              ri === receiptIndex ? updatedReceipt : receipt
+            )
+          }
+        : stack
+    ));
+  };
+
+  const deleteReceipt = (receiptIndex) => {
+    const currentReceipts = getCurrentReceipts();
     
-    // Adjust current index if necessary
-    if (currentReceiptIndex >= receipts.length - 1) {
-      setCurrentReceiptIndex(Math.max(0, receipts.length - 2));
-    } else if (currentReceiptIndex > index) {
+    // Always allow deletion, but keep at least one receipt in the stack
+    if (currentReceipts.length <= 1) {
+      // Replace with empty receipt instead of deleting
+      if (window.confirm('This is the last receipt. Replace it with a new empty receipt?')) {
+        const emptyReceipt = createEmptyReceipt();
+        setStacks(prev => prev.map((stack, i) => 
+          i === currentStackIndex 
+            ? { ...stack, receipts: [emptyReceipt] }
+            : stack
+        ));
+        setCurrentReceiptIndex(0);
+      }
+      return;
+    }
+    
+    setStacks(prev => prev.map((stack, i) => 
+      i === currentStackIndex 
+        ? {
+            ...stack,
+            receipts: stack.receipts.filter((_, ri) => ri !== receiptIndex)
+          }
+        : stack
+    ));
+    
+    // Adjust current index
+    if (currentReceiptIndex >= currentReceipts.length - 1) {
+      setCurrentReceiptIndex(Math.max(0, currentReceipts.length - 2));
+    } else if (currentReceiptIndex > receiptIndex) {
       setCurrentReceiptIndex(currentReceiptIndex - 1);
     }
   };
@@ -84,8 +200,15 @@ function App() {
     setCurrentReceiptIndex(index);
   };
 
+  const switchStack = (stackIndex) => {
+    setCurrentStackIndex(stackIndex);
+    setCurrentReceiptIndex(0);
+    setShowStackManager(false);
+  };
+
   const calculateOverallBalance = () => {
-    const completedReceipts = receipts.filter(receipt => receipt.isCompleted);
+    const currentReceipts = getCurrentReceipts();
+    const completedReceipts = currentReceipts.filter(receipt => receipt.isCompleted);
     
     if (completedReceipts.length === 0) {
       return {};
@@ -101,10 +224,8 @@ function App() {
       const payerOwes = receipt.splits[payer] || 0;
       const payerPaid = receipt.total;
 
-      // Payer gets credit for what they paid minus what they owe
       netBalances[payer] += payerPaid - payerOwes;
 
-      // Everyone else owes their share
       friends.forEach(friend => {
         if (friend !== payer) {
           const friendOwes = receipt.splits[friend] || 0;
@@ -116,28 +237,55 @@ function App() {
     return netBalances;
   };
 
-  const completedReceiptsCount = receipts.filter(receipt => receipt.isCompleted).length;
-  const completedReceipts = receipts.filter(receipt => receipt.isCompleted);
+  // If viewing a shared receipt
+  if (sharedReceipt) {
+    return (
+      <div className="app">
+        <ReceiptCarousel
+          receipts={[sharedReceipt]}
+          currentIndex={0}
+          onUpdateReceipt={() => {}}
+          onDeleteReceipt={() => {}}
+          onNavigate={() => {}}
+          friends={friends}
+          overallBalanceData={null}
+          isReadOnly={true}
+        />
+        
+        <button 
+          className="back-to-app-btn"
+          onClick={() => {
+            window.location.href = window.location.origin + window.location.pathname;
+          }}
+          title="Back to My Receipts"
+        >
+          ← Back to My Receipts
+        </button>
+      </div>
+    );
+  }
 
-  // Prepare overall balance data
-  const overallBalanceData = completedReceiptsCount > 0 ? {
+  const currentReceipts = getCurrentReceipts();
+  const currentStack = getCurrentStack();
+  const completedReceipts = currentReceipts.filter(r => r.isCompleted);
+  const overallBalanceData = completedReceipts.length > 0 ? {
     balances: calculateOverallBalance(),
     completedReceipts: completedReceipts
   } : null;
 
-  // Calculate total cards (receipts + overall balance if applicable)
-  const totalCards = receipts.length + (overallBalanceData ? 1 : 0);
+  const totalCards = currentReceipts.length + (overallBalanceData ? 1 : 0);
 
   return (
     <div className="app">
       <ReceiptCarousel
-        receipts={receipts}
+        receipts={currentReceipts}
         currentIndex={currentReceiptIndex}
         onUpdateReceipt={updateReceipt}
         onDeleteReceipt={deleteReceipt}
         onNavigate={navigateToReceipt}
         friends={friends}
         overallBalanceData={overallBalanceData}
+        isReadOnly={false}
       />
       
       <button 
@@ -148,11 +296,208 @@ function App() {
         +
       </button>
 
+      <button 
+        className="history-btn"
+        onClick={() => setShowHistory(true)}
+        title="View Receipt History"
+      >
+        📚
+      </button>
+
+      <button 
+        className="stack-manager-btn"
+        onClick={() => setShowStackManager(true)}
+        title="Manage Receipt Stacks"
+      >
+        📁
+      </button>
+
       <div className="receipt-counter">
+        {currentStack?.name || 'Loading...'}
+        <br />
         {currentReceiptIndex + 1} / {totalCards}
-        {completedReceiptsCount > 0 && (
-          <span> • {completedReceiptsCount} completed</span>
+        {completedReceipts.length > 0 && (
+          <span> • {completedReceipts.length} completed</span>
         )}
+      </div>
+
+      {showHistory && (
+        <ReceiptHistory
+          receipts={currentReceipts}
+          friends={friends}
+          onViewReceipt={(index) => {
+            const completedIdx = currentReceipts.filter(r => r.isCompleted);
+            const actualIndex = currentReceipts.findIndex(r => r.id === completedIdx[index].id);
+            navigateToReceipt(actualIndex);
+            setShowHistory(false);
+          }}
+          onClose={() => setShowHistory(false)}
+        />
+      )}
+
+      {showStackManager && (
+        <StackManager
+          stacks={stacks}
+          currentStackIndex={currentStackIndex}
+          onSwitchStack={switchStack}
+          onCreateStack={addNewStack}
+          onUpdateStack={updateStackInfo}
+          onDeleteStack={deleteStack}
+          onClose={() => setShowStackManager(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Stack Manager Component
+function StackManager({ stacks, currentStackIndex, onSwitchStack, onCreateStack, onUpdateStack, onDeleteStack, onClose }) {
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [newStackName, setNewStackName] = useState('');
+  const [newStackDate, setNewStackDate] = useState(new Date().toISOString().split('T')[0]);
+  const [editingStack, setEditingStack] = useState(null);
+
+  const handleCreateStack = () => {
+    if (!newStackName.trim()) {
+      alert('Please enter a name for the hangout');
+      return;
+    }
+    const dateISO = new Date(newStackDate).toISOString();
+    onCreateStack(newStackName, dateISO);
+    setNewStackName('');
+    setNewStackDate(new Date().toISOString().split('T')[0]);
+    setShowNewForm(false);
+  };
+
+  const handleUpdateStack = (stackIndex) => {
+    if (!editingStack.name.trim()) {
+      alert('Name cannot be empty');
+      return;
+    }
+    onUpdateStack(stackIndex, {
+      name: editingStack.name,
+      date: new Date(editingStack.date).toISOString()
+    });
+    setEditingStack(null);
+  };
+
+  const formatDate = (isoString) => {
+    return new Date(isoString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  return (
+    <div className="history-overlay" onClick={onClose}>
+      <div className="history-modal stack-manager-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="history-header">
+          <h2>📁 Receipt Stacks</h2>
+          <button className="close-modal-btn" onClick={onClose}>×</button>
+        </div>
+        
+        <div className="history-body">
+          <button 
+            className="create-stack-btn"
+            onClick={() => setShowNewForm(!showNewForm)}
+          >
+            + New Hangout
+          </button>
+
+          {showNewForm && (
+            <div className="new-stack-form">
+              <input
+                type="text"
+                placeholder="Hangout name (e.g., Norcal Trip)"
+                value={newStackName}
+                onChange={(e) => setNewStackName(e.target.value)}
+                className="stack-name-input"
+              />
+              <input
+                type="date"
+                value={newStackDate}
+                onChange={(e) => setNewStackDate(e.target.value)}
+                className="stack-date-input"
+              />
+              <div className="form-actions">
+                <button onClick={handleCreateStack} className="save-stack-btn">Create</button>
+                <button onClick={() => setShowNewForm(false)} className="cancel-stack-btn">Cancel</button>
+              </div>
+            </div>
+          )}
+
+          <div className="stack-list">
+            {stacks.map((stack, index) => (
+              <div 
+                key={stack.id} 
+                className={`stack-item ${index === currentStackIndex ? 'active-stack' : ''}`}
+              >
+                {editingStack?.index === index ? (
+                  <div className="edit-stack-form">
+                    <input
+                      type="text"
+                      value={editingStack.name}
+                      onChange={(e) => setEditingStack({ ...editingStack, name: e.target.value })}
+                      className="stack-name-input"
+                    />
+                    <input
+                      type="date"
+                      value={editingStack.date}
+                      onChange={(e) => setEditingStack({ ...editingStack, date: e.target.value })}
+                      className="stack-date-input"
+                    />
+                    <div className="form-actions">
+                      <button onClick={() => handleUpdateStack(index)} className="save-stack-btn">Save</button>
+                      <button onClick={() => setEditingStack(null)} className="cancel-stack-btn">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="stack-info" onClick={() => onSwitchStack(index)}>
+                      <h3>{stack.name}</h3>
+                      <div className="stack-meta">
+                        <span className="stack-date">📅 {formatDate(stack.date)}</span>
+                        <span className="stack-receipts">
+                          {stack.receipts.length} receipt{stack.receipts.length !== 1 ? 's' : ''}
+                        </span>
+                        <span className="stack-completed">
+                          {stack.receipts.filter(r => r.isCompleted).length} completed
+                        </span>
+                      </div>
+                    </div>
+                    <div className="stack-actions">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingStack({
+                            index,
+                            name: stack.name,
+                            date: new Date(stack.date).toISOString().split('T')[0]
+                          });
+                        }}
+                        className="edit-stack-btn"
+                        title="Edit"
+                      >
+                        ✏️
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteStack(index);
+                        }}
+                        className="delete-stack-btn"
+                        title="Delete"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
