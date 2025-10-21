@@ -57,11 +57,14 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
     
     // Calculate individual items total
     const individualTotal = activeFriends.reduce((sum, friend) => {
-      return sum + localReceipt.individualItems[friend].reduce((friendSum, item) => friendSum + item.price, 0);
+      const items = localReceipt.individualItems?.[friend];
+      if (!Array.isArray(items)) return sum;
+      return sum + items.reduce((friendSum, item) => friendSum + item.price, 0);
     }, 0);
 
     // Calculate shared items total
-    const sharedTotal = localReceipt.sharedItems.reduce((sum, item) => sum + item.price, 0);
+    const sharedItems = localReceipt.sharedItems || [];
+    const sharedTotal = sharedItems.reduce((sum, item) => sum + item.price, 0);
 
     return individualTotal + sharedTotal;
   };
@@ -88,17 +91,21 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
   }, [localReceipt.individualItems, localReceipt.sharedItems, localReceipt.taxes, localReceipt.tip, localReceipt.activeFriends]);
 
   const addIndividualItem = (friendName, item) => {
+    const currentItems = localReceipt.individualItems || {};
+    const friendItems = currentItems[friendName] || [];
     const updatedItems = {
-      ...localReceipt.individualItems,
-      [friendName]: [...localReceipt.individualItems[friendName], item]
+      ...currentItems,
+      [friendName]: [...friendItems, item]
     };
     updateLocalReceipt({ individualItems: updatedItems });
   };
 
   const removeIndividualItem = (friendName, itemIndex) => {
+    const currentItems = localReceipt.individualItems || {};
+    const friendItems = currentItems[friendName] || [];
     const updatedItems = {
-      ...localReceipt.individualItems,
-      [friendName]: localReceipt.individualItems[friendName].filter((_, i) => i !== itemIndex)
+      ...currentItems,
+      [friendName]: friendItems.filter((_, i) => i !== itemIndex)
     };
     updateLocalReceipt({ individualItems: updatedItems });
   };
@@ -129,12 +136,16 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
 
     // Add individual items for active friends only
     activeFriends.forEach(friend => {
-      const individualTotal = localReceipt.individualItems[friend].reduce((sum, item) => sum + item.price, 0);
-      calculatedSplits[friend] += individualTotal;
+      const items = localReceipt.individualItems?.[friend];
+      if (Array.isArray(items)) {
+        const individualTotal = items.reduce((sum, item) => sum + item.price, 0);
+        calculatedSplits[friend] += individualTotal;
+      }
     });
 
     // Add shared items (only active friends can participate)
-    localReceipt.sharedItems.forEach(item => {
+    const sharedItems = localReceipt.sharedItems || [];
+    sharedItems.forEach(item => {
       const sharePerPerson = item.price / item.participants.length;
       item.participants.forEach(participant => {
         if (activeFriends.includes(participant)) {
