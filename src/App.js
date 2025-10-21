@@ -24,6 +24,7 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showStackManager, setShowStackManager] = useState(false);
   const [loadingShared, setLoadingShared] = useState(false);
+  const [shareError, setShareError] = useState(null);
 
   // Check for shared stack ID in URL path (e.g., /ABC123)
   useEffect(() => {
@@ -328,8 +329,9 @@ function App() {
   if (loadingShared) {
     return (
       <div className="app">
-        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
+        <div style={{ textAlign: 'center', padding: '100px 20px', color: 'white' }}>
           <h2>Loading shared receipt...</h2>
+          <p>Please wait...</p>
         </div>
       </div>
     );

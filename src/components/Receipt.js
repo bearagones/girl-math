@@ -222,7 +222,9 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
   };
 
   const getFriendTotal = (friendName) => {
-    return localReceipt.individualItems[friendName].reduce((sum, item) => sum + item.price, 0);
+    const items = localReceipt.individualItems?.[friendName];
+    if (!Array.isArray(items)) return 0;
+    return items.reduce((sum, item) => sum + item.price, 0);
   };
 
   const toggleFriend = (friendName) => {
@@ -333,7 +335,7 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
             <FriendSection
               key={friend}
               friendName={friend}
-              items={localReceipt.individualItems[friend]}
+              items={localReceipt.individualItems?.[friend] || []}
               total={getFriendTotal(friend)}
               onAddItem={(item) => addIndividualItem(friend, item)}
               onRemoveItem={(itemIndex) => removeIndividualItem(friend, itemIndex)}
