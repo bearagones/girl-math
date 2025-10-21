@@ -1,74 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import ReceiptCarousel from './components/ReceiptCarousel';
 import ReceiptHistory from './components/ReceiptHistory';
+import { database } from './firebase';
+import { ref, set, get } from 'firebase/database';
 
 const friends = ['beatrice', 'farin', 'tiffany', 'monica', 'andrew', 'marisa'];
+
+// Generate a unique shareable ID (6 characters)
+const generateShareId = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
 
 function App() {
   const [stacks, setStacks] = useState([]); // Array of receipt stacks
   const [currentStackIndex, setCurrentStackIndex] = useState(0);
   const [currentReceiptIndex, setCurrentReceiptIndex] = useState(0);
-  const [sharedReceipt, setSharedReceipt] = useState(null);
+  const [sharedStack, setSharedStack] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
   const [showStackManager, setShowStackManager] = useState(false);
+  const [loadingShared, setLoadingShared] = useState(false);
 
-  // Check for receipt ID in URL path
+  // Check for shared stack ID in URL path (e.g., /ABC123)
   useEffect(() => {
-    const path = window.location.pathname;
-    const receiptIdMatch = path.match(/^\/(\d+)$/);
-    
-    if (receiptIdMatch) {
-      const receiptId = receiptIdMatch[1];
-      // Try to find the receipt in saved stacks
-      const savedStacks = localStorage.getItem('girlMathStacks');
-      if (savedStacks) {
+    const checkForSharedStack = async () => {
+      const path = window.location.pathname;
+      const shareIdMatch = path.match(/^\/([A-Z0-9]{6})$/);
+      
+      if (shareIdMatch) {
+        const shareId = shareIdMatch[1];
+        setLoadingShared(true);
+        
         try {
-          const parsed = JSON.parse(savedStacks);
-          let foundReceipt = null;
+          // Load from Firebase
+          const stackRef = ref(database, `shared-stacks/${shareId}`);
+          const snapshot = await get(stackRef);
           
-          // Search for receipt across all stacks
-          for (const stack of parsed) {
-            const receipt = stack.receipts.find(r => r.id.toString() === receiptId);
-            if (receipt && receipt.isCompleted) {
-              foundReceipt = receipt;
-              break;
-            }
-          }
-          
-          if (foundReceipt) {
-            setSharedReceipt(foundReceipt);
+          if (snapshot.exists()) {
+            const sharedStackData = snapshot.val();
+            setSharedStack(sharedStackData);
           } else {
-            // Receipt not found, redirect to home
+            alert('This shared link is not valid or has expired.');
             window.history.pushState({}, '', '/');
           }
-        } catch (e) {
-          console.error('Failed to load receipt:', e);
+        } catch (error) {
+          console.error('Error loading shared stack:', error);
+          alert('Failed to load shared receipt. Please check your internet connection.');
           window.history.pushState({}, '', '/');
+        } finally {
+          setLoadingShared(false);
         }
       }
-    }
+    };
+    
+    checkForSharedStack();
   }, []);
 
-  // Update URL when viewing a completed receipt
-  useEffect(() => {
-    if (!sharedReceipt && stacks.length > 0) {
-      const currentReceipts = getCurrentReceipts();
-      const currentReceipt = currentReceipts[currentReceiptIndex];
-      
-      if (currentReceipt && currentReceipt.isCompleted) {
-        // Update URL to include receipt ID
-        const newPath = `/${currentReceipt.id}`;
-        if (window.location.pathname !== newPath) {
-          window.history.pushState({}, '', newPath);
-        }
-      } else {
-        // Clear URL for non-completed receipts
-        if (window.location.pathname !== '/') {
-          window.history.pushState({}, '', '/');
-        }
-      }
-    }
-  }, [currentReceiptIndex, stacks, currentStackIndex, sharedReceipt]);
 
   // Load saved stacks from localStorage
   useEffect(() => {
@@ -280,29 +271,102 @@ function App() {
     return netBalances;
   };
 
-  // If viewing a shared receipt
-  if (sharedReceipt) {
+  // Function to share current stack to Firebase
+  const shareCurrentStack = async () => {
+    const stack = getCurrentStack();
+    const completedReceipts = stack.receipts.filter(r => r.isCompleted);
+    
+    if (completedReceipts.length === 0) {
+      alert('Please complete at least one receipt before sharing.');
+      return null;
+    }
+    
+    try {
+      // Generate unique share ID
+      const shareId = generateShareId();
+      
+      // Prepare data for sharing (only completed receipts and overall balance)
+      const shareData = {
+        stackName: stack.name,
+        stackDate: stack.date,
+        receipts: completedReceipts,
+        sharedAt: new Date().toISOString()
+      };
+      
+      // Save to Firebase
+      const stackRef = ref(database, `shared-stacks/${shareId}`);
+      await set(stackRef, shareData);
+      
+      // Return the share URL
+      const shareUrl = `${window.location.origin}/${shareId}`;
+      return shareUrl;
+    } catch (error) {
+      console.error('Error sharing stack:', error);
+      alert('Failed to share. Please make sure you have configured Firebase correctly.');
+      return null;
+    }
+  };
+
+  // If viewing a shared stack
+  if (loadingShared) {
+    return (
+      <div className="app">
+        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
+          <h2>Loading shared receipt...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (sharedStack) {
+    // Calculate overall balance for shared stack
+    const sharedBalances = friends.reduce((acc, friend) => {
+      acc[friend] = 0;
+      return acc;
+    }, {});
+
+    sharedStack.receipts.forEach(receipt => {
+      const payer = receipt.payer;
+      const payerOwes = receipt.splits[payer] || 0;
+      const payerPaid = receipt.total;
+
+      sharedBalances[payer] += payerPaid - payerOwes;
+
+      friends.forEach(friend => {
+        if (friend !== payer) {
+          const friendOwes = receipt.splits[friend] || 0;
+          sharedBalances[friend] -= friendOwes;
+        }
+      });
+    });
+
+    const sharedOverallData = {
+      balances: sharedBalances,
+      completedReceipts: sharedStack.receipts
+    };
+
     return (
       <div className="app">
         <ReceiptCarousel
-          receipts={[sharedReceipt]}
+          receipts={sharedStack.receipts}
           currentIndex={0}
           onUpdateReceipt={() => {}}
           onDeleteReceipt={() => {}}
           onNavigate={() => {}}
           friends={friends}
-          overallBalanceData={null}
+          overallBalanceData={sharedOverallData}
           isReadOnly={true}
+          stackName={sharedStack.stackName}
         />
         
         <button 
           className="back-to-app-btn"
           onClick={() => {
-            window.location.href = window.location.origin + window.location.pathname;
+            window.location.href = window.location.origin;
           }}
-          title="Back to My Receipts"
+          title="Back to Home"
         >
-          ← Back to My Receipts
+          ← Back to Home
         </button>
       </div>
     );
@@ -329,6 +393,7 @@ function App() {
         friends={friends}
         overallBalanceData={overallBalanceData}
         isReadOnly={false}
+        onShareStack={shareCurrentStack}
       />
       
       <button 

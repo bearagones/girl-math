@@ -10,7 +10,9 @@ function ReceiptCarousel({
   onNavigate, 
   friends,
   overallBalanceData,
-  isReadOnly = false
+  isReadOnly = false,
+  onShareStack,
+  stackName
 }) {
   // Create combined array of receipts + overall balance card
   const allCards = [...receipts];
@@ -72,6 +74,9 @@ function ReceiptCarousel({
               balances={card.balances}
               friends={friends}
               completedReceipts={card.completedReceipts}
+              onShareStack={onShareStack}
+              isReadOnly={isReadOnly}
+              stackName={stackName}
             />
           ) : (
             <Receipt
