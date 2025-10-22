@@ -34,20 +34,20 @@ function ReceiptCarousel({
     return 'hidden';
   };
 
-  const canNavigatePrev = currentIndex > 0;
-  const canNavigateNext = currentIndex < allCards.length - 1;
-
   const handlePrevious = () => {
-    if (canNavigatePrev) {
-      onNavigate(currentIndex - 1);
-    }
+    // Circular navigation: go to last card if at first
+    const newIndex = currentIndex === 0 ? allCards.length - 1 : currentIndex - 1;
+    onNavigate(newIndex);
   };
 
   const handleNext = () => {
-    if (canNavigateNext) {
-      onNavigate(currentIndex + 1);
-    }
+    // Circular navigation: go to first card if at last
+    const newIndex = currentIndex === allCards.length - 1 ? 0 : currentIndex + 1;
+    onNavigate(newIndex);
   };
+
+  const canNavigatePrev = true; // Always can navigate with circular
+  const canNavigateNext = true; // Always can navigate with circular
 
   // Touch handlers for swipe navigation
   const handleTouchStart = (e) => {
