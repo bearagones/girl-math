@@ -1435,47 +1435,403 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+
+/* Tablet (1024px and below) */
+@media (max-width: 1024px) {
+  body {
+    padding: 10px;
+    padding-top: 5vh;
+  }
+
   .carousel-container {
-    padding: 0 10px;
+    padding-top: 20vh;
   }
 
   .receipt-card {
-    width: 350px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+  }
+
+  /* Reposition fixed buttons for tablet */
+  .add-receipt-btn,
+  .history-btn,
+  .stack-manager-btn {
+    right: 20px;
+  }
+
+  .receipt-counter {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+}
+
+/* Mobile Landscape and Tablet Portrait (768px and below) */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+    padding-top: 60px;
+  }
+
+  .carousel-container {
+    padding-top: 10vh;
+  }
+
+  .receipt-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100vh - 150px);
   }
 
   .receipt-card.prev,
   .receipt-card.next {
-    transform: translateX(0) rotateY(0deg) scale(0.95);
+    transform: translateX(0) scale(0.95);
     opacity: 0.5;
   }
 
-  .totals-grid {
-    grid-template-columns: 1fr;
+  .receipt-card.hidden {
+    transform: translateX(0) scale(0.9);
+    opacity: 0.3;
   }
 
-  .add-receipt-btn {
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
+  .receipt-header h1 {
+    font-size: 1.5rem;
   }
 
-  .nav-arrow {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .receipt-card {
-    width: 320px;
+  .receipt-header p {
+    font-size: 0.8rem;
   }
 
   .receipt-body {
     padding: 20px 15px;
   }
 
+  /* Make buttons touch-friendly */
+  .add-receipt-btn,
+  .history-btn,
+  .stack-manager-btn {
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+    right: 15px;
+  }
+
+  .add-receipt-btn {
+    top: calc(50% - 80px);
+  }
+
+  .history-btn {
+    top: calc(50% + 0px);
+  }
+
+  .stack-manager-btn {
+    top: calc(50% + 80px);
+  }
+
+  .back-to-app-btn {
+    left: 15px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  /* Hide nav arrows on mobile - use swipe instead */
+  .nav-arrow {
+    display: none;
+  }
+
+  /* Receipt counter - move to top */
+  .receipt-counter {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    left: auto;
+    font-size: 10px;
+    padding: 6px 10px;
+    z-index: 101;
+  }
+
+  /* Adjust grids for mobile */
+  .totals-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .total-input-group input {
+    width: 100%;
+  }
+
+  .friend-checkboxes {
+    grid-template-columns: 1fr;
+  }
+
   .participants-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Make action buttons stack on mobile */
+  .actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .action-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  /* Transaction items on mobile */
+  .transaction-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .transaction-amount {
+    align-self: flex-end;
+  }
+
+  /* Modal adjustments */
+  .history-modal,
+  .stack-manager-modal {
+    max-width: 95%;
+    max-height: 85vh;
+  }
+
+  .history-header h2 {
+    font-size: 18px;
+  }
+
+  .history-body {
+    padding: 15px;
+  }
+
+  .share-modal {
+    max-width: 95%;
+  }
+
+  .share-link-container {
+    flex-direction: column;
+  }
+
+  .copy-btn {
+    width: 100%;
+  }
+
+  /* Stack meta items wrap on mobile */
+  .stack-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .stack-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .stack-actions {
+    align-self: flex-end;
+  }
+}
+
+/* Mobile Portrait (480px and below) */
+@media (max-width: 480px) {
+  body {
+    padding: 5px;
+    padding-top: 50px;
+  }
+
+  .carousel-container {
+    padding-top: 5vh;
+  }
+
+  .receipt-card {
+    max-height: calc(100vh - 120px);
+  }
+
+  .receipt-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .receipt-header p {
+    font-size: 0.75rem;
+  }
+
+  .receipt-body {
+    padding: 15px 12px;
+  }
+
+  /* Smaller buttons on very small screens */
+  .add-receipt-btn,
+  .history-btn,
+  .stack-manager-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    right: 10px;
+  }
+
+  .add-receipt-btn {
+    top: calc(50% - 70px);
+  }
+
+  .history-btn {
+    top: calc(50% + 0px);
+  }
+
+  .stack-manager-btn {
+    top: calc(50% + 70px);
+  }
+
+  .back-to-app-btn {
+    left: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  /* Even more compact layout */
+  .section-title {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .friend-item {
+    padding: 12px;
+    margin-bottom: 15px;
+  }
+
+  .friend-name {
+    font-size: 14px;
+  }
+
+  .item-row {
+    font-size: 11px;
+  }
+
+  .shared-section,
+  .totals-section,
+  .results-section,
+  .payment-tracking-section {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+
+  /* Make totals grid single column on very small screens */
+  .totals-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Smaller text in various sections */
+  .subject-input {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .action-btn {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .split-result {
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  .transaction-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .history-item-details {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .receipt-counter {
+    font-size: 9px;
+    padding: 5px 8px;
+  }
+
+  /* Make modals full-screen on small phones */
+  .history-modal,
+  .stack-manager-modal,
+  .share-modal {
+    max-width: 100%;
+    max-height: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .history-header {
+    border-radius: 0;
+  }
+}
+
+/* Small phones (360px and below) */
+@media (max-width: 360px) {
+  .receipt-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .add-receipt-btn,
+  .history-btn,
+  .stack-manager-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+
+  .friend-item {
+    padding: 10px;
+  }
+
+  .add-item-form {
+    flex-wrap: wrap;
+  }
+
+  .add-item-form input[type="text"],
+  .add-item-form input[type="number"] {
+    flex: 1 1 100%;
+  }
+
+  .add-item-form button {
+    flex: 1 1 100%;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 600px) and (orientation: landscape) {
+  body {
+    padding-top: 40px;
+  }
+
+  .carousel-container {
+    padding-top: 5vh;
+  }
+
+  .receipt-card {
+    max-height: calc(100vh - 80px);
+  }
+
+  .add-receipt-btn,
+  .history-btn,
+  .stack-manager-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+
+  .add-receipt-btn {
+    top: 20%;
+  }
+
+  .history-btn {
+    top: 50%;
+  }
+
+  .stack-manager-btn {
+    top: 80%;
   }
 }
