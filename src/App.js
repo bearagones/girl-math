@@ -55,6 +55,8 @@ function App() {
             const sharedStackData = snapshot.val();
             console.log('Loaded shared stack:', sharedStackData);
             setSharedStack(sharedStackData);
+            // Set initial index to last card (Overall Dues)
+            setSharedReceiptIndex(sharedStackData.receipts.length);
           } else {
             console.error('Share ID not found:', shareId);
             alert('This shared link is not valid or has expired.');

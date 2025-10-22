@@ -1469,18 +1469,52 @@ body {
 /* Mobile Landscape and Tablet Portrait (768px and below) */
 @media (max-width: 768px) {
   body {
-    padding: 10px;
-    padding-top: 60px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .app {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .carousel-container {
-    padding-top: 10vh;
+    padding-top: 0;
+    height: 100vh;
+    width: 100%;
   }
 
   .receipt-card {
-    width: 100%;
-    max-width: 100%;
-    max-height: calc(100vh - 150px);
+    width: 95%;
+    max-width: 95%;
+    max-height: 85vh;
+    margin-left: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .receipt-card.active {
+    transform: translateX(-50%) !important;
+  }
+
+  .receipt-card.prev {
+    transform: translateX(-50%) scale(0.95) !important;
+    opacity: 0.5;
+  }
+
+  .receipt-card.next {
+    transform: translateX(-50%) scale(0.95) !important;
+    opacity: 0.5;
+  }
+
+  .receipt-card.hidden {
+    transform: translateX(-50%) scale(0.9) !important;
+    opacity: 0.3;
   }
 
   .receipt-card.prev,

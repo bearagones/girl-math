@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import Receipt from './Receipt';
 import OverallBalanceCard from './OverallBalanceCard';
 
@@ -14,6 +14,9 @@ function ReceiptCarousel({
   onShareStack,
   stackName
 }) {
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const [isSwiping, setIsSwiping] = useState(false);
   // Create combined array of receipts + overall balance card
   const allCards = [...receipts];
   if (overallBalanceData && overallBalanceData.completedReceipts.length > 0) {
@@ -46,8 +49,44 @@ function ReceiptCarousel({
     }
   };
 
+  // Touch handlers for swipe navigation
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    setIsSwiping(true);
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!isSwiping) return;
+    
+    const swipeDistance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0) {
+        // Swiped left - go to next
+        handleNext();
+      } else {
+        // Swiped right - go to previous
+        handlePrevious();
+      }
+    }
+    
+    setIsSwiping(false);
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
   return (
-    <div className="carousel-container">
+    <div 
+      className="carousel-container"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Navigation Arrows */}
       <button 
         className="nav-arrow prev"
