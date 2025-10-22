@@ -1499,15 +1499,12 @@ body {
 
   .receipt-card.active {
     z-index: 10;
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .receipt-card.prev,
-  .receipt-card.next {
-    z-index: 5;
-    opacity: 0;
-    pointer-events: none;
-  }
-
+  .receipt-card.next,
   .receipt-card.hidden {
     z-index: 1;
     opacity: 0;
@@ -1600,15 +1597,33 @@ body {
     font-size: 13px;
   }
 
-  /* Transaction items on mobile */
+  /* Transaction items stay inline on mobile */
   .transaction-item {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
     gap: 8px;
+    padding: 10px;
+  }
+
+  .transaction-details {
+    flex: 1;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .transaction-from,
+  .transaction-to {
+    white-space: nowrap;
+  }
+
+  .transaction-arrow {
+    font-size: 14px;
   }
 
   .transaction-amount {
-    align-self: flex-end;
+    white-space: nowrap;
+    font-size: 13px;
   }
 
   /* Modal adjustments */
@@ -1758,10 +1773,17 @@ body {
     padding: 8px;
   }
 
+  /* Keep transaction details inline on small phones too */
   .transaction-details {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
     gap: 4px;
+    font-size: 11px;
+  }
+
+  .transaction-from,
+  .transaction-to {
+    font-size: 11px;
   }
 
   .history-item-details {
