@@ -40,7 +40,7 @@ function SharedItems({ items, friends, onAddItem, onRemoveItem, isActive }) {
       <div className="section-title">Shared Items</div>
       
       <div className="shared-items">
-        {items.map((item, index) => (
+        {(items || []).map((item, index) => (
           <div key={index} className="shared-item">
             <div className="shared-item-info">
               <div><strong>{item.name}</strong> - ${item.price.toFixed(2)}</div>

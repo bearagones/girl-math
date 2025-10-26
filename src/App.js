@@ -125,13 +125,16 @@ function App() {
         return;
       }
 
-      const totalCards = getCurrentReceipts().length + (calculateOverallBalance && completedReceipts.length > 0 ? 1 : 0);
+      const currentReceipts = getCurrentReceipts();
+      const completedReceipts = currentReceipts.filter(r => r.isCompleted);
+      const hasOverallBalance = completedReceipts.length > 0;
+      const totalCards = currentReceipts.length + (hasOverallBalance ? 1 : 0);
 
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         // Circular navigation: go to last if at first
         const newIndex = currentReceiptIndex === 0 ? totalCards - 1 : currentReceiptIndex - 1;
-        setCurrentReceiptIndex(newIndex);
+        setCurrentReceiptIndex(Math.max(0, newIndex)); // Ensure non-negative
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
         // Circular navigation: go to first if at last
@@ -145,7 +148,7 @@ function App() {
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [currentReceiptIndex, sharedStack]);
+  }, [currentReceiptIndex, sharedStack, stacks, currentStackIndex]);
 
   // Save stacks to localStorage whenever they change
   useEffect(() => {
