@@ -271,14 +271,16 @@ function App() {
 
     completedReceipts.forEach(receipt => {
       const payer = receipt.payer;
-      const payerOwes = receipt.splits[payer] || 0;
+      // Safety check: ensure splits exists
+      const splits = receipt.splits || {};
+      const payerOwes = splits[payer] || 0;
       const payerPaid = receipt.total;
 
       netBalances[payer] += payerPaid - payerOwes;
 
       friends.forEach(friend => {
         if (friend !== payer) {
-          const friendOwes = receipt.splits[friend] || 0;
+          const friendOwes = splits[friend] || 0;
           netBalances[friend] -= friendOwes;
         }
       });
@@ -349,14 +351,16 @@ function App() {
 
     sharedStack.receipts.forEach(receipt => {
       const payer = receipt.payer;
-      const payerOwes = receipt.splits[payer] || 0;
+      // Safety check: ensure splits exists
+      const splits = receipt.splits || {};
+      const payerOwes = splits[payer] || 0;
       const payerPaid = receipt.total;
 
       sharedBalances[payer] += payerPaid - payerOwes;
 
       friends.forEach(friend => {
         if (friend !== payer) {
-          const friendOwes = receipt.splits[friend] || 0;
+          const friendOwes = splits[friend] || 0;
           sharedBalances[friend] -= friendOwes;
         }
       });

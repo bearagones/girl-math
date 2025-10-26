@@ -192,13 +192,79 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
 
   const saveReceipt = () => {
     if (!localReceipt.subject || !localReceipt.payer || localReceipt.total <= 0) {
-      alert('Please fill in all required fields and calculate the split first.');
+      alert('Please fill in all required fields (subject, who paid, and total).');
       return;
+    }
+
+    // Auto-calculate splits if they haven't been calculated yet
+    let finalSplits = splits;
+    if (!showResults || Object.keys(splits).length === 0) {
+      // Calculate splits
+      const calculatedSplits = {};
+      const activeFriends = getActiveFriends();
+      
+      // Initialize splits for active friends only
+      activeFriends.forEach(friend => {
+        calculatedSplits[friend] = 0;
+      });
+
+      // Add individual items for active friends only
+      activeFriends.forEach(friend => {
+        const items = localReceipt.individualItems?.[friend];
+        if (Array.isArray(items)) {
+          const individualTotal = items.reduce((sum, item) => sum + item.price, 0);
+          calculatedSplits[friend] += individualTotal;
+        }
+      });
+
+      // Add shared items (only active friends can participate)
+      const sharedItems = localReceipt.sharedItems || [];
+      sharedItems.forEach(item => {
+        const sharePerPerson = item.price / item.participants.length;
+        item.participants.forEach(participant => {
+          if (activeFriends.includes(participant)) {
+            calculatedSplits[participant] += sharePerPerson;
+          }
+        });
+      });
+
+      // Calculate tax rate and apply to each person's subtotal
+      const subtotal = localReceipt.subtotal || 0;
+      const taxes = localReceipt.taxes || 0;
+      const tip = localReceipt.tip || 0;
+
+      if (subtotal > 0 && taxes > 0) {
+        const taxRate = (taxes / subtotal) + 1;
+        activeFriends.forEach(friend => {
+          if (calculatedSplits[friend] > 0) {
+            calculatedSplits[friend] = calculatedSplits[friend] * taxRate;
+          }
+        });
+      }
+
+      // Add tip split evenly among active friends
+      if (tip > 0 && activeFriends.length > 0) {
+        const tipPerPerson = tip / activeFriends.length;
+        activeFriends.forEach(friend => {
+          calculatedSplits[friend] += tipPerPerson;
+        });
+      }
+
+      // Round up all amounts to the nearest cent
+      activeFriends.forEach(friend => {
+        if (calculatedSplits[friend] > 0) {
+          calculatedSplits[friend] = Math.ceil(calculatedSplits[friend] * 100) / 100;
+        }
+      });
+
+      finalSplits = calculatedSplits;
+      setSplits(calculatedSplits);
+      setShowResults(true);
     }
 
     const updatedReceipt = {
       ...localReceipt,
-      splits: splits,
+      splits: finalSplits,
       isCompleted: true,
       timestamp: new Date().toISOString()
     };
