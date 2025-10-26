@@ -117,7 +117,7 @@ function App() {
     }
   }, []);
 
-  // Keyboard navigation with arrow keys
+  // Keyboard navigation with arrow keys (for both normal and shared views)
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Only handle arrow keys if not in an input field
@@ -125,30 +125,41 @@ function App() {
         return;
       }
 
-      const currentReceipts = getCurrentReceipts();
-      const completedReceipts = currentReceipts.filter(r => r.isCompleted);
-      const hasOverallBalance = completedReceipts.length > 0;
-      const totalCards = currentReceipts.length + (hasOverallBalance ? 1 : 0);
+      if (sharedStack) {
+        // Navigation for shared stack view
+        const sharedTotalCards = sharedStack.receipts.length + 1;
+        
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const newIndex = sharedReceiptIndex === 0 ? sharedTotalCards - 1 : sharedReceiptIndex - 1;
+          setSharedReceiptIndex(Math.max(0, newIndex));
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          const newIndex = sharedReceiptIndex === sharedTotalCards - 1 ? 0 : sharedReceiptIndex + 1;
+          setSharedReceiptIndex(newIndex);
+        }
+      } else {
+        // Navigation for normal view
+        const currentReceipts = getCurrentReceipts();
+        const completedReceipts = currentReceipts.filter(r => r.isCompleted);
+        const hasOverallBalance = completedReceipts.length > 0;
+        const totalCards = currentReceipts.length + (hasOverallBalance ? 1 : 0);
 
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        // Circular navigation: go to last if at first
-        const newIndex = currentReceiptIndex === 0 ? totalCards - 1 : currentReceiptIndex - 1;
-        setCurrentReceiptIndex(Math.max(0, newIndex)); // Ensure non-negative
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        // Circular navigation: go to first if at last
-        const newIndex = currentReceiptIndex === totalCards - 1 ? 0 : currentReceiptIndex + 1;
-        setCurrentReceiptIndex(newIndex);
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const newIndex = currentReceiptIndex === 0 ? totalCards - 1 : currentReceiptIndex - 1;
+          setCurrentReceiptIndex(Math.max(0, newIndex));
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          const newIndex = currentReceiptIndex === totalCards - 1 ? 0 : currentReceiptIndex + 1;
+          setCurrentReceiptIndex(newIndex);
+        }
       }
     };
 
-    // Don't add listener if viewing shared stack
-    if (!sharedStack) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [currentReceiptIndex, sharedStack, stacks, currentStackIndex]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentReceiptIndex, sharedReceiptIndex, sharedStack, stacks, currentStackIndex]);
 
   // Save stacks to localStorage whenever they change
   useEffect(() => {
@@ -426,6 +437,7 @@ function App() {
           overallBalanceData={sharedOverallData}
           isReadOnly={true}
           stackName={sharedStack.stackName}
+          shareId={window.location.pathname.substring(1)}
         />
         
         <div className="receipt-counter">
