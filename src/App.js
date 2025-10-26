@@ -127,7 +127,8 @@ function App() {
     name: name || 'New Hangout',
     date: date || new Date().toISOString(),
     receipts: [],
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    shareId: null // Store the share ID for this stack
   });
 
   const createDefaultStack = () => {
@@ -305,8 +306,13 @@ function App() {
     }
     
     try {
-      // Generate unique share ID
-      const shareId = generateShareId();
+      // Reuse existing share ID if available, otherwise generate new one
+      let shareId = stack.shareId;
+      if (!shareId) {
+        shareId = generateShareId();
+        // Save the share ID to the stack
+        updateStackInfo(currentStackIndex, { shareId });
+      }
       
       // Prepare data for sharing (only completed receipts and overall balance)
       const shareData = {
@@ -316,7 +322,7 @@ function App() {
         sharedAt: new Date().toISOString()
       };
       
-      // Save to Firebase
+      // Save/Update in Firebase
       const stackRef = ref(database, `shared-stacks/${shareId}`);
       await set(stackRef, shareData);
       

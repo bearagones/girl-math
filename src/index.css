@@ -32,43 +32,50 @@ body {
   justify-content: center;
   position: relative;
   max-height: 100vh;
-  perspective: 1000px;
+  perspective: 2000px;
   padding-top: 40vh;
+  transform-style: preserve-3d;
 }
 
-/* Receipt Card */
+/* Receipt Card - Spinning Carousel Style */
 .receipt-card {
   width: 420px;
   background: #ffffff;
   border-radius: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  position: relative;
-  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  position: absolute;
+  transition: all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
   max-height: 85vh;
   overflow-y: auto;
+  transform-style: preserve-3d;
 }
 
 .receipt-card.active {
   z-index: 10;
-  transform: translateX(0) translateY(0);
+  transform: translateX(0) translateZ(0) scale(1);
+  opacity: 1;
+  filter: brightness(1);
 }
 
 .receipt-card.prev {
   z-index: 5;
-  transform: translateX(-30px) translateY(-10px);
-  opacity: 0.8;
+  transform: translateX(-500px) translateZ(-200px) rotateY(45deg) scale(0.85);
+  opacity: 0.6;
+  filter: brightness(0.7);
 }
 
 .receipt-card.next {
   z-index: 5;
-  transform: translateX(30px) translateY(-10px);
-  opacity: 0.8;
+  transform: translateX(500px) translateZ(-200px) rotateY(-45deg) scale(0.85);
+  opacity: 0.6;
+  filter: brightness(0.7);
 }
 
 .receipt-card.hidden {
   z-index: 1;
-  transform: translateX(-60px) translateY(-20px);
-  opacity: 0.6;
+  transform: translateX(-700px) translateZ(-400px) rotateY(60deg) scale(0.7);
+  opacity: 0.3;
+  filter: brightness(0.5);
 }
 
 /* Receipt Paper Effect */
