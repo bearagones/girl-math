@@ -518,40 +518,6 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
           </div>
         )}
 
-        {/* Payment Tracking Section - only show for completed receipts */}
-        {localReceipt.isCompleted && !isReadOnly && (
-          <div className="payment-tracking-section">
-            <div className="section-title">💰 Payment Status</div>
-            <div className="payment-checklist">
-              {friends.map(friend => {
-                const amount = splits[friend] || 0;
-                if (amount <= 0.01 || friend === localReceipt.payer) return null;
-                
-                const friendName = friend.charAt(0).toUpperCase() + friend.slice(1);
-                const hasPaid = localReceipt.payments?.[friend] || false;
-                
-                return (
-                  <label key={friend} className={`payment-checkbox-item ${hasPaid ? 'paid' : ''}`}>
-                    <input
-                      type="checkbox"
-                      checked={hasPaid}
-                      onChange={(e) => {
-                        const updatedPayments = {
-                          ...localReceipt.payments,
-                          [friend]: e.target.checked
-                        };
-                        updateLocalReceipt({ payments: updatedPayments });
-                      }}
-                    />
-                    <span className="payment-friend-name">{friendName}</span>
-                    <span className="payment-amount">${amount.toFixed(2)}</span>
-                    {hasPaid && <span className="paid-badge">✓ Paid</span>}
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
