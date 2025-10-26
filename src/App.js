@@ -86,6 +86,8 @@ function App() {
         if (parsed.length > 0) {
           setStacks(parsed);
           setCurrentStackIndex(parsed.length - 1);
+          // Always start at index 0 (first receipt, which should be blank)
+          setCurrentReceiptIndex(0);
         } else {
           createDefaultStack();
         }
@@ -114,6 +116,36 @@ function App() {
       createDefaultStack();
     }
   }, []);
+
+  // Keyboard navigation with arrow keys
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Only handle arrow keys if not in an input field
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+        return;
+      }
+
+      const totalCards = getCurrentReceipts().length + (calculateOverallBalance && completedReceipts.length > 0 ? 1 : 0);
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        // Circular navigation: go to last if at first
+        const newIndex = currentReceiptIndex === 0 ? totalCards - 1 : currentReceiptIndex - 1;
+        setCurrentReceiptIndex(newIndex);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        // Circular navigation: go to first if at last
+        const newIndex = currentReceiptIndex === totalCards - 1 ? 0 : currentReceiptIndex + 1;
+        setCurrentReceiptIndex(newIndex);
+      }
+    };
+
+    // Don't add listener if viewing shared stack
+    if (!sharedStack) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [currentReceiptIndex, sharedStack]);
 
   // Save stacks to localStorage whenever they change
   useEffect(() => {

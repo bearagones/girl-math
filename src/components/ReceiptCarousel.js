@@ -29,8 +29,21 @@ function ReceiptCarousel({
 
   const getCardClass = (index) => {
     if (index === currentIndex) return 'active';
-    if (index === currentIndex - 1) return 'prev';
-    if (index === currentIndex + 1) return 'next';
+    
+    // Calculate visual positions with wrapping
+    const totalCards = allCards.length;
+    const diff = index - currentIndex;
+    
+    // Handle wrapping: if we're at first card, show last card on left
+    if (currentIndex === 0 && index === totalCards - 1) return 'prev';
+    // Handle wrapping: if we're at last card, show first card on right
+    if (currentIndex === totalCards - 1 && index === 0) return 'next';
+    
+    // Normal adjacent cards
+    if (diff === -1) return 'prev';
+    if (diff === 1) return 'next';
+    
+    // Everything else is hidden
     return 'hidden';
   };
 
