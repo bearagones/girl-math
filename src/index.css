@@ -1477,6 +1477,7 @@ body {
 @media (max-width: 768px) {
   body {
     padding: 0;
+    overflow-x: hidden;
   }
 
   .app {
@@ -1485,6 +1486,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-x: hidden;
   }
 
   .carousel-container {
@@ -1530,26 +1532,36 @@ body {
     padding: 20px 15px;
   }
 
-  /* Make buttons touch-friendly */
+  /* Make buttons touch-friendly and ensure they're clickable */
   .add-receipt-btn,
   .history-btn,
   .stack-manager-btn {
-    width: 56px;
-    height: 56px;
-    font-size: 22px;
-    right: 15px;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    right: 10px;
+    z-index: 1000;
+    pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .add-receipt-btn {
-    top: calc(50% - 80px);
+    top: auto;
+    bottom: calc(50vh + 140px);
+    transform: none;
   }
 
   .history-btn {
-    top: calc(50% + 0px);
+    top: auto;
+    bottom: calc(50vh + 70px);
+    transform: none;
   }
 
   .stack-manager-btn {
-    top: calc(50% + 80px);
+    top: auto;
+    bottom: calc(50vh);
+    transform: none;
   }
 
   .back-to-app-btn {
@@ -1715,15 +1727,21 @@ body {
   }
 
   .add-receipt-btn {
-    top: calc(50% - 70px);
+    top: auto;
+    bottom: calc(50vh + 120px);
+    transform: none;
   }
 
   .history-btn {
-    top: calc(50% + 0px);
+    top: auto;
+    bottom: calc(50vh + 60px);
+    transform: none;
   }
 
   .stack-manager-btn {
-    top: calc(50% + 70px);
+    top: auto;
+    bottom: calc(50vh);
+    transform: none;
   }
 
   .back-to-app-btn {
