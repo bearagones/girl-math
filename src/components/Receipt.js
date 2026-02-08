@@ -8,6 +8,7 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
   const [showResults, setShowResults] = useState(false);
   const [splits, setSplits] = useState({});
   const [showFriendManager, setShowFriendManager] = useState(false);
+  const [showSanityCheck, setShowSanityCheck] = useState(false);
 
   // If receipt is completed or in read-only mode, show the results
   useEffect(() => {
@@ -515,6 +516,171 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
                 );
               }
             })}
+          </div>
+        )}
+
+        {/* Sanity Check Section */}
+        {showResults && (
+          <div className="sanity-check-section">
+            <button 
+              className="sanity-check-toggle"
+              onClick={() => setShowSanityCheck(!showSanityCheck)}
+            >
+              {showSanityCheck ? '📊 Hide' : '📊 Show'} Sanity Check (Detailed Math)
+            </button>
+            
+            {showSanityCheck && (
+              <div className="sanity-check-content">
+                <div className="sanity-check-intro">
+                  <p>Let's break down exactly how we calculated everyone's share:</p>
+                </div>
+
+                {getActiveFriends().map(friend => {
+                  const friendName = friend.charAt(0).toUpperCase() + friend.slice(1);
+                  const items = localReceipt.individualItems?.[friend] || [];
+                  const individualTotal = items.reduce((sum, item) => sum + item.price, 0);
+                  
+                  // Calculate shared items for this friend
+                  const sharedItems = localReceipt.sharedItems || [];
+                  const sharedBreakdown = sharedItems
+                    .filter(item => item.participants.includes(friend))
+                    .map(item => ({
+                      name: item.name,
+                      total: item.price,
+                      participants: item.participants.length,
+                      share: item.price / item.participants.length
+                    }));
+                  const sharedTotal = sharedBreakdown.reduce((sum, item) => sum + item.share, 0);
+                  
+                  const subtotalBeforeTax = individualTotal + sharedTotal;
+                  
+                  // Calculate tax portion
+                  const subtotal = localReceipt.subtotal || 0;
+                  const taxes = localReceipt.taxes || 0;
+                  const taxRate = subtotal > 0 && taxes > 0 ? taxes / subtotal : 0;
+                  const taxAmount = subtotalBeforeTax * taxRate;
+                  const subtotalAfterTax = subtotalBeforeTax + taxAmount;
+                  
+                  // Calculate tip portion
+                  const tip = localReceipt.tip || 0;
+                  const activeFriends = getActiveFriends();
+                  const tipPerPerson = activeFriends.length > 0 ? tip / activeFriends.length : 0;
+                  
+                  const finalTotal = splits[friend] || 0;
+                  
+                  return (
+                    <div key={friend} className="sanity-check-friend">
+                      <div className="sanity-friend-header">
+                        <h4>{friendName}'s Breakdown</h4>
+                      </div>
+                      
+                      <div className="sanity-calculation-steps">
+                        {/* Step 1: Individual Items */}
+                        {items.length > 0 && (
+                          <div className="sanity-step">
+                            <div className="sanity-step-title">1️⃣ Individual Items:</div>
+                            {items.map((item, idx) => (
+                              <div key={idx} className="sanity-item">
+                                <span>{item.name}</span>
+                                <span>${item.price.toFixed(2)}</span>
+                              </div>
+                            ))}
+                            <div className="sanity-subtotal">
+                              <span>Individual Total:</span>
+                              <span>${individualTotal.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Step 2: Shared Items */}
+                        {sharedBreakdown.length > 0 && (
+                          <div className="sanity-step">
+                            <div className="sanity-step-title">2️⃣ Shared Items:</div>
+                            {sharedBreakdown.map((item, idx) => (
+                              <div key={idx} className="sanity-item">
+                                <span>{item.name} (÷ {item.participants})</span>
+                                <span>${item.total.toFixed(2)} ÷ {item.participants} = ${item.share.toFixed(2)}</span>
+                              </div>
+                            ))}
+                            <div className="sanity-subtotal">
+                              <span>Shared Total:</span>
+                              <span>${sharedTotal.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Step 3: Subtotal Before Tax */}
+                        <div className="sanity-step">
+                          <div className="sanity-step-title">3️⃣ Subtotal (Before Tax):</div>
+                          <div className="sanity-calculation">
+                            <span>{individualTotal > 0 && sharedTotal > 0 ? 
+                              `$${individualTotal.toFixed(2)} + $${sharedTotal.toFixed(2)}` : 
+                              individualTotal > 0 ? `$${individualTotal.toFixed(2)}` : `$${sharedTotal.toFixed(2)}`
+                            }</span>
+                            <span className="sanity-equals">= ${subtotalBeforeTax.toFixed(2)}</span>
+                          </div>
+                        </div>
+                        
+                        {/* Step 4: Tax */}
+                        {taxes > 0 && (
+                          <div className="sanity-step">
+                            <div className="sanity-step-title">4️⃣ Tax ({(taxRate * 100).toFixed(2)}%):</div>
+                            <div className="sanity-calculation">
+                              <span>${subtotalBeforeTax.toFixed(2)} × {(taxRate * 100).toFixed(2)}%</span>
+                              <span className="sanity-equals">= ${taxAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="sanity-subtotal">
+                              <span>After Tax:</span>
+                              <span>${subtotalAfterTax.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Step 5: Tip */}
+                        {tip > 0 && (
+                          <div className="sanity-step">
+                            <div className="sanity-step-title">5️⃣ Tip (Split Equally):</div>
+                            <div className="sanity-calculation">
+                              <span>${tip.toFixed(2)} ÷ {activeFriends.length} people</span>
+                              <span className="sanity-equals">= ${tipPerPerson.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Final Total */}
+                        <div className="sanity-final-total">
+                          <div className="sanity-step-title">💰 Final Amount (Rounded Up):</div>
+                          <div className="sanity-calculation-large">
+                            <span>Total Owed:</span>
+                            <span className="sanity-final-amount">${finalTotal.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {/* Verification */}
+                <div className="sanity-verification">
+                  <div className="sanity-step-title">✅ Verification:</div>
+                  <div className="sanity-verification-item">
+                    <span>Sum of all splits:</span>
+                    <span>${Object.values(splits).reduce((sum, val) => sum + val, 0).toFixed(2)}</span>
+                  </div>
+                  <div className="sanity-verification-item">
+                    <span>Receipt total:</span>
+                    <span>${localReceipt.total.toFixed(2)}</span>
+                  </div>
+                  <div className="sanity-verification-item">
+                    <span>Difference:</span>
+                    <span>${Math.abs(Object.values(splits).reduce((sum, val) => sum + val, 0) - localReceipt.total).toFixed(2)}</span>
+                  </div>
+                  <div className="sanity-note">
+                    <em>Note: Small differences may occur due to rounding up to nearest cent for fairness.</em>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

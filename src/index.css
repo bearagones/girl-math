@@ -589,6 +589,213 @@ body {
   border-left: 4px solid #28a745;
 }
 
+/* Sanity Check Section */
+.sanity-check-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f0f8ff;
+  border-radius: 8px;
+  border: 2px solid #667eea;
+}
+
+.sanity-check-toggle {
+  width: 100%;
+  padding: 12px 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.sanity-check-toggle:hover {
+  background: #5a67d8;
+  transform: translateY(-1px);
+}
+
+.sanity-check-content {
+  margin-top: 20px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.sanity-check-intro {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 2px dashed #667eea;
+}
+
+.sanity-check-intro p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.sanity-check-friend {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 2px solid #e9ecef;
+}
+
+.sanity-friend-header {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+}
+
+.sanity-friend-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.sanity-calculation-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.sanity-step {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #667eea;
+}
+
+.sanity-step-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sanity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 12px;
+  border-bottom: 1px dotted #ddd;
+}
+
+.sanity-item:last-of-type {
+  border-bottom: none;
+  margin-bottom: 8px;
+}
+
+.sanity-subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  border-top: 2px solid #ddd;
+  margin-top: 8px;
+  color: #667eea;
+}
+
+.sanity-calculation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 4px;
+  font-size: 12px;
+  margin: 5px 0;
+}
+
+.sanity-equals {
+  font-weight: 700;
+  color: #667eea;
+}
+
+.sanity-final-total {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  padding: 20px;
+  border-radius: 8px;
+  color: white;
+  margin-top: 10px;
+}
+
+.sanity-final-total .sanity-step-title {
+  color: white;
+  font-size: 14px;
+}
+
+.sanity-calculation-large {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.sanity-final-amount {
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.sanity-verification {
+  background: #d4edda;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  border: 2px solid #28a745;
+}
+
+.sanity-verification .sanity-step-title {
+  color: #28a745;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.sanity-verification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.sanity-verification-item:last-of-type {
+  margin-bottom: 15px;
+}
+
+.sanity-note {
+  margin-top: 10px;
+  padding: 10px;
+  background: white;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  border: 1px dashed #28a745;
+}
+
+.sanity-note em {
+  font-style: italic;
+}
+
 /* Add Button */
 .add-receipt-btn {
   position: fixed;
