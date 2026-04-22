@@ -70,12 +70,53 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
     return individualTotal + sharedTotal;
   };
 
-  // Auto-calculate total from subtotal, taxes, and tip
+  // Auto-calculate total from subtotal, discount, fees, taxes, and tip
   const calculateTotal = () => {
-    const subtotal = calculateSubtotal();
+    let runningTotal = calculateSubtotal();
+    
+    // Apply discount (always before tax)
+    const discount = localReceipt.discount;
+    if (discount?.enabled && discount?.amount > 0) {
+      runningTotal -= discount.amount;
+    }
+    
+    // Apply additional fee (before tax if configured)
+    const additionalFee = localReceipt.additionalFee;
+    let feeAmount = 0;
+    if (additionalFee?.enabled && additionalFee?.amount > 0) {
+      if (!additionalFee.applyAfterTax) {
+        if (additionalFee.isPercentage) {
+          // Percentage of subtotal (after discount)
+          feeAmount = (runningTotal * additionalFee.amount) / 100;
+        } else {
+          // Flat fee
+          feeAmount = additionalFee.amount;
+        }
+        runningTotal += feeAmount;
+      }
+    }
+    
+    // Apply taxes
     const taxes = localReceipt.taxes || 0;
+    runningTotal += taxes;
+    
+    // Apply additional fee after tax if configured
+    if (additionalFee?.enabled && additionalFee?.amount > 0 && additionalFee.applyAfterTax) {
+      if (additionalFee.isPercentage) {
+        // Percentage of (subtotal + tax)
+        feeAmount = (runningTotal * additionalFee.amount) / 100;
+      } else {
+        // Flat fee
+        feeAmount = additionalFee.amount;
+      }
+      runningTotal += feeAmount;
+    }
+    
+    // Add tip
     const tip = localReceipt.tip || 0;
-    return subtotal + taxes + tip;
+    runningTotal += tip;
+    
+    return runningTotal;
   };
 
   // Update subtotal and total whenever items change
@@ -439,6 +480,8 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
           total={localReceipt.total}
           payer={localReceipt.payer}
           friends={getActiveFriends()}
+          discount={localReceipt.discount}
+          additionalFee={localReceipt.additionalFee}
           onUpdate={updateLocalReceipt}
         />
 

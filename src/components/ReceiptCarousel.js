@@ -64,11 +64,31 @@ function ReceiptCarousel({
 
   // Touch handlers for swipe navigation
   const handleTouchStart = (e) => {
+    // Ignore touches on interactive elements
+    const target = e.target;
+    const isInteractive = target.tagName === 'INPUT' || 
+                          target.tagName === 'TEXTAREA' || 
+                          target.tagName === 'BUTTON' || 
+                          target.tagName === 'SELECT' ||
+                          target.type === 'checkbox' ||
+                          target.type === 'radio' ||
+                          target.closest('button') ||
+                          target.closest('input') ||
+                          target.closest('select') ||
+                          target.closest('textarea');
+    
+    if (isInteractive) {
+      setIsSwiping(false);
+      return;
+    }
+    
     touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX; // Initialize to same value
     setIsSwiping(true);
   };
 
   const handleTouchMove = (e) => {
+    if (!isSwiping) return;
     touchEndX.current = e.touches[0].clientX;
   };
 
@@ -76,8 +96,9 @@ function ReceiptCarousel({
     if (!isSwiping) return;
     
     const swipeDistance = touchStartX.current - touchEndX.current;
-    const minSwipeDistance = 50;
-
+    const minSwipeDistance = 75; // Increased threshold to prevent accidental swipes
+    
+    // Only navigate if there was actual movement
     if (Math.abs(swipeDistance) > minSwipeDistance) {
       if (swipeDistance > 0) {
         // Swiped left - go to next
