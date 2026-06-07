@@ -206,7 +206,7 @@ function OverallBalanceCard({ balances, friends, completedReceipts, onShareStack
 
         {/* Share Stack Button - only show if not in read-only mode */}
         {!isReadOnly && onShareStack && totalCompleted > 0 && (
-          <div className="actions">
+          <div className="actions" style={{ marginTop: '25px' }}>
             <button 
               className="action-btn share-btn" 
               onClick={handleShare}

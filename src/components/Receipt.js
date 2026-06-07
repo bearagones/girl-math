@@ -130,7 +130,7 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
       setLocalReceipt(updatedReceipt);
       onUpdate(updatedReceipt);
     }
-  }, [localReceipt.individualItems, localReceipt.sharedItems, localReceipt.taxes, localReceipt.tip, localReceipt.activeFriends]);
+  }, [localReceipt.individualItems, localReceipt.sharedItems, localReceipt.taxes, localReceipt.tip, localReceipt.activeFriends, localReceipt.discount, localReceipt.additionalFee]);
 
   const addIndividualItem = (friendName, item) => {
     const currentItems = localReceipt.individualItems || {};
