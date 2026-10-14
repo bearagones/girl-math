@@ -1,6 +1,8 @@
 import React from 'react';
+import { useFriends } from '../FriendsContext';
 
 function ReceiptHistory({ receipts, friends, onViewReceipt, onClose }) {
+  const { getName } = useFriends();
   const completedReceipts = receipts.filter(r => r.isCompleted);
   
   const formatDate = (timestamp) => {
@@ -69,7 +71,7 @@ function ReceiptHistory({ receipts, friends, onViewReceipt, onClose }) {
                       </div>
                       <div className="history-detail">
                         <span className="detail-label">Paid by:</span>
-                        <span>{receipt.payer?.charAt(0).toUpperCase() + receipt.payer?.slice(1)}</span>
+                        <span>{getName(receipt.payer)}</span>
                       </div>
                       <div className="history-detail">
                         <span className="detail-label">Payment Status:</span>

@@ -259,36 +259,6 @@ body {
   border-left: 4px solid;
 }
 
-.friend-item.beatrice {
-  border-left: 4px solid;
-  border-image: linear-gradient(to bottom, #8bbfff, #80cb99) 1;
-}
-
-.friend-item.farin {
-  border-left: 4px solid;
-  border-image: linear-gradient(to bottom, #ffb60c, #8e65d3) 1;
-}
-
-.friend-item.tiffany {
-  border-left: 4px solid;
-  border-image: linear-gradient(to bottom, #ffc0ec, #f6ff96) 1;
-}
-
-.friend-item.monica {
-  border-left: 4px solid;
-  border-image: linear-gradient(to bottom, #ff5454, #603c0e) 1;
-}
-
-.friend-item.andrew {
-  border-left: 4px solid;
-  border-image: linear-gradient(to bottom, #d690ff, #65a980) 1;
-}
-
-.friend-item.marisa {
-  border-left: 4px solid;
-  border-image: linear-gradient(to bottom, #98e3ff, #b83a21) 1;
-}
-
 .friend-name {
   font-weight: 600;
   font-size: 16px;

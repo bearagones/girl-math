@@ -1,6 +1,8 @@
 import React from 'react';
+import { useFriends } from '../FriendsContext';
 
 function OverallBalance({ balances, friends, show, onToggle }) {
+  const { getName } = useFriends();
   if (!show) {
     return (
       <div className="overall-balance" style={{ padding: '15px' }}>
@@ -25,7 +27,7 @@ function OverallBalance({ balances, friends, show, onToggle }) {
       </div>
       
       {sortedFriends.map(friend => {
-        const friendName = friend.charAt(0).toUpperCase() + friend.slice(1);
+        const friendName = getName(friend);
         const balance = balances[friend] || 0;
         
         if (Math.abs(balance) <= 0.01) {

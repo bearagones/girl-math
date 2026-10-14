@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useFriends } from '../FriendsContext';
 
 function ReceiptTotals({ subtotal, tip, total, taxes, payer, friends, onUpdate, discount, additionalFee }) {
+  const { getName } = useFriends();
   const [showAdvanced, setShowAdvanced] = useState(false);
   
   const handleInputChange = (field, value) => {
@@ -98,7 +100,7 @@ function ReceiptTotals({ subtotal, tip, total, taxes, payer, friends, onUpdate, 
           <option value="">Select who paid</option>
           {friends.map(friend => (
             <option key={friend} value={friend}>
-              {friend.charAt(0).toUpperCase() + friend.slice(1)}
+              {getName(friend)}
             </option>
           ))}
         </select>

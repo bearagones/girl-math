@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import FriendManager from './components/FriendManager';
+import { FriendsProvider, buildFriendsApi, DEFAULT_FRIENDS } from './FriendsContext';
 import ReceiptCarousel from './components/ReceiptCarousel';
 import ReceiptHistory from './components/ReceiptHistory';
 import { database, isFirebaseConfigured } from './firebase';
 import { ref, set, get } from 'firebase/database';
 
-const friends = ['beatrice', 'farin', 'tiffany', 'monica', 'andrew', 'marisa'];
+// Friends now live in state (see App / AppContent below) instead of being hardcoded.
 
 // Generate a unique shareable ID (6 characters)
 const generateShareId = () => {
@@ -16,7 +18,11 @@ const generateShareId = () => {
   return result;
 };
 
-function App() {
+function AppContent({ friendList, ownFriends, setFriendList, setSharedFriends }) {
+  const friends = friendList.map((f) => f.id);
+  const [showFriendManager, setShowFriendManager] = useState(
+    ownFriends.length === 0 && !/^\/[A-Z0-9]{6}$/.test(window.location.pathname)
+  );
   const [stacks, setStacks] = useState([]); // Array of receipt stacks
   const [currentStackIndex, setCurrentStackIndex] = useState(0);
   const [currentReceiptIndex, setCurrentReceiptIndex] = useState(0);
@@ -55,6 +61,12 @@ function App() {
             const sharedStackData = snapshot.val();
             console.log('Loaded shared stack:', sharedStackData);
             setSharedStack(sharedStackData);
+            // Use the sharer's friend names/colors (old links fall back to the original group)
+            setSharedFriends(
+              Array.isArray(sharedStackData.friends) && sharedStackData.friends.length > 0
+                ? sharedStackData.friends
+                : DEFAULT_FRIENDS
+            );
             // Set initial index to last card (Overall Dues)
             setSharedReceiptIndex(sharedStackData.receipts.length);
           } else {
@@ -167,6 +179,29 @@ function App() {
       localStorage.setItem('girlMathStacks', JSON.stringify(stacks));
     }
   }, [stacks]);
+
+  // Save an edited friends list; add newly added people to any unsaved receipts
+  const updateFriends = (newList) => {
+    const oldIds = ownFriends.map((f) => f.id);
+    const addedIds = newList.map((f) => f.id).filter((id) => !oldIds.includes(id));
+    setFriendList(newList);
+    if (addedIds.length > 0) {
+      setStacks((prev) => prev.map((stack) => ({
+        ...stack,
+        receipts: stack.receipts.map((r) => {
+          if (r.isCompleted) return r;
+          const active = r.activeFriends || [];
+          const items = { ...(r.individualItems || {}) };
+          addedIds.forEach((id) => { if (!items[id]) items[id] = []; });
+          return {
+            ...r,
+            activeFriends: [...active, ...addedIds.filter((id) => !active.includes(id))],
+            individualItems: items
+          };
+        })
+      })));
+    }
+  };
 
   const createStack = (name, date) => ({
     id: Date.now(),
@@ -364,6 +399,7 @@ function App() {
       const shareData = {
         stackName: stack.name,
         stackDate: stack.date,
+        friends: ownFriends,
         receipts: completedReceipts,
         sharedAt: new Date().toISOString()
       };
@@ -515,6 +551,22 @@ function App() {
           <span> • {completedReceipts.length} completed</span>
         )}
       </div>
+
+      <button
+        className="stack-manager-btn friends-btn"
+        onClick={() => setShowFriendManager(true)}
+        title="Edit Friends & Colors"
+      >
+        👯
+      </button>
+
+      {showFriendManager && (
+        <FriendManager
+          friends={ownFriends}
+          onSave={updateFriends}
+          onClose={() => setShowFriendManager(false)}
+        />
+      )}
 
       {showHistory && (
         <ReceiptHistory
@@ -695,6 +747,39 @@ function StackManager({ stacks, currentStackIndex, onSwitchStack, onCreateStack,
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  const [friendList, setFriendList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('girlMathFriends');
+      if (saved) return JSON.parse(saved);
+      // Existing users keep the original friend group; new users start empty
+      if (localStorage.getItem('girlMathStacks')) return DEFAULT_FRIENDS;
+    } catch (e) {
+      console.log('Could not load friends');
+    }
+    return [];
+  });
+  const [sharedFriends, setSharedFriends] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem('girlMathFriends', JSON.stringify(friendList));
+  }, [friendList]);
+
+  const displayed = sharedFriends || friendList;
+  const api = useMemo(() => buildFriendsApi(displayed), [displayed]);
+
+  return (
+    <FriendsProvider value={api}>
+      <AppContent
+        friendList={displayed}
+        ownFriends={friendList}
+        setFriendList={setFriendList}
+        setSharedFriends={setSharedFriends}
+      />
+    </FriendsProvider>
   );
 }
 

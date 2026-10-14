@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useFriends } from '../FriendsContext';
 
 function SharedItems({ items, friends, onAddItem, onRemoveItem, isActive }) {
+  const { getName } = useFriends();
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [selectedParticipants, setSelectedParticipants] = useState([]);
@@ -45,7 +47,7 @@ function SharedItems({ items, friends, onAddItem, onRemoveItem, isActive }) {
             <div className="shared-item-info">
               <div><strong>{item.name}</strong> - ${item.price.toFixed(2)}</div>
               <div className="shared-item-participants">
-                Shared by: {item.participants.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')}
+                Shared by: {item.participants.map(p => getName(p)).join(', ')}
                 <span> (${(item.price / item.participants.length).toFixed(2)} each)</span>
               </div>
             </div>
@@ -91,7 +93,7 @@ function SharedItems({ items, friends, onAddItem, onRemoveItem, isActive }) {
                   checked={selectedParticipants.includes(friend)}
                   onChange={(e) => handleParticipantChange(friend, e.target.checked)}
                 />
-                {friend.charAt(0).toUpperCase() + friend.slice(1)}
+                {getName(friend)}
               </label>
             ))}
           </div>

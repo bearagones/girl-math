@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useFriends } from '../FriendsContext';
 
 function FriendSection({ friendName, items, total, onAddItem, onRemoveItem, isActive }) {
+  const { getName, getStyle } = useFriends();
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
 
@@ -25,9 +27,9 @@ function FriendSection({ friendName, items, total, onAddItem, onRemoveItem, isAc
   };
 
   return (
-    <div className={`friend-item ${friendName}`}>
-      <div className={`friend-name ${friendName}`}>
-        {friendName.charAt(0).toUpperCase() + friendName.slice(1)}
+    <div className="friend-item" style={getStyle(friendName)}>
+      <div className="friend-name">
+        {getName(friendName)}
       </div>
       
       <div className="items-list">

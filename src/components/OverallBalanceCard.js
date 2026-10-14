@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useFriends } from '../FriendsContext';
 
 function OverallBalanceCard({ balances, friends, completedReceipts, onShareStack, isReadOnly, stackName }) {
+  const { getName } = useFriends();
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareLink, setShareLink] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
@@ -129,7 +131,7 @@ function OverallBalanceCard({ balances, friends, completedReceipts, onShareStack
           <div className="friends-section">
             <div className="section-title">Individual Net Balances</div>
             {participatingFriends.map(friend => {
-              const friendName = friend.charAt(0).toUpperCase() + friend.slice(1);
+              const friendName = getName(friend);
               const balance = balances[friend] || 0;
               
               return (
@@ -156,8 +158,8 @@ function OverallBalanceCard({ balances, friends, completedReceipts, onShareStack
             <div className="section-title">💸 Who Owes What to Whom</div>
             <div className="settlement-instructions">
               {consolidatedDebts.map((debt, index) => {
-                const fromName = debt.from.charAt(0).toUpperCase() + debt.from.slice(1);
-                const toName = debt.to.charAt(0).toUpperCase() + debt.to.slice(1);
+                const fromName = getName(debt.from);
+                const toName = getName(debt.to);
                 
                 return (
                   <div key={index} className="transaction-item">

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import FriendSection from './FriendSection';
 import SharedItems from './SharedItems';
 import ReceiptTotals from './ReceiptTotals';
+import { useFriends } from '../FriendsContext';
 
 function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = false }) {
+  const { getName } = useFriends();
   const [localReceipt, setLocalReceipt] = useState(receipt);
   const [showResults, setShowResults] = useState(false);
   const [splits, setSplits] = useState({});
@@ -436,8 +438,8 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
                         checked={getActiveFriends().includes(friend)}
                         onChange={() => toggleFriend(friend)}
                       />
-                      <span className={`friend-checkbox-label ${friend}`}>
-                        {friend.charAt(0).toUpperCase() + friend.slice(1)}
+                      <span className="friend-checkbox-label">
+                        {getName(friend)}
                       </span>
                     </label>
                   ))}
@@ -537,7 +539,7 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
           <div className="results-section">
             <div className="section-title">Split Calculation</div>
             {friends.map(friend => {
-              const friendName = friend.charAt(0).toUpperCase() + friend.slice(1);
+              const friendName = getName(friend);
               const amount = splits[friend] || 0;
               
               if (amount <= 0) return null;
@@ -553,7 +555,7 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
               } else {
                 return (
                   <div key={friend} className="split-result owes">
-                    <span><strong>{friendName}</strong> owes {localReceipt.payer.charAt(0).toUpperCase() + localReceipt.payer.slice(1)}:</span>
+                    <span><strong>{friendName}</strong> owes {getName(localReceipt.payer)}:</span>
                     <span><strong>${amount.toFixed(2)}</strong></span>
                   </div>
                 );
@@ -579,7 +581,7 @@ function Receipt({ receipt, friends, onUpdate, onDelete, isActive, isReadOnly = 
                 </div>
 
                 {getActiveFriends().map(friend => {
-                  const friendName = friend.charAt(0).toUpperCase() + friend.slice(1);
+                  const friendName = getName(friend);
                   const items = localReceipt.individualItems?.[friend] || [];
                   const individualTotal = items.reduce((sum, item) => sum + item.price, 0);
                   
