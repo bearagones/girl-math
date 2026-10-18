@@ -2204,3 +2204,13 @@ body {
     top: 80%;
   }
 }
+
+/* Friend manager */
+.friend-manager-help { font-size: 12px; color: #666; margin-bottom: 15px; }
+.friend-edit-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; margin-bottom: 10px; background: #f8f9fa; border-radius: 8px; }
+.friend-edit-name { flex: 1; min-width: 0; padding: 8px; border: 2px solid #e9ecef; border-radius: 6px; font-size: 14px; font-family: 'JetBrains Mono', monospace; }
+.friend-edit-colors { display: flex; align-items: center; gap: 6px; }
+.friend-edit-colors input[type='color'] { width: 36px; height: 36px; padding: 0; border: none; background: none; cursor: pointer; }
+.stack-manager-btn.friends-btn { top: calc(50% + 240px); background: linear-gradient(135deg, #ff7eb3, #ff758c); }
+@media (max-width: 768px) { .stack-manager-btn.friends-btn { top: auto; bottom: calc(50vh - 70px); transform: none; } }
+@media (max-width: 480px) { .stack-manager-btn.friends-btn { top: auto; bottom: calc(50vh - 60px); transform: none; } }
