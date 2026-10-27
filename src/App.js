@@ -603,6 +603,16 @@ function StackManager({ stacks, currentStackIndex, onSwitchStack, onCreateStack,
   const [newStackName, setNewStackName] = useState('');
   const [newStackDate, setNewStackDate] = useState(new Date().toISOString().split('T')[0]);
   const [editingStack, setEditingStack] = useState(null);
+  const [tab, setTab] = useState('active');
+
+  // Keep original indexes (handlers use them), filter by tab, newest hangout first
+  const byNewest = (a, b) =>
+    (new Date(b.stack.date) - new Date(a.stack.date)) ||
+    (new Date(b.stack.createdAt || 0) - new Date(a.stack.createdAt || 0));
+  const indexed = stacks.map((stack, index) => ({ stack, index }));
+  const activeStacks = indexed.filter(({ stack }) => !stack.archived).sort(byNewest);
+  const archivedStacks = indexed.filter(({ stack }) => stack.archived).sort(byNewest);
+  const visibleStacks = tab === 'archived' ? archivedStacks : activeStacks;
 
   const handleCreateStack = () => {
     if (!newStackName.trim()) {
@@ -674,8 +684,30 @@ function StackManager({ stacks, currentStackIndex, onSwitchStack, onCreateStack,
             </div>
           )}
 
+          <div className="stack-tabs">
+            <button
+              className={`stack-tab ${tab === 'active' ? 'selected' : ''}`}
+              onClick={() => setTab('active')}
+            >
+              Active ({activeStacks.length})
+            </button>
+            <button
+              className={`stack-tab ${tab === 'archived' ? 'selected' : ''}`}
+              onClick={() => setTab('archived')}
+            >
+              📦 Archived ({archivedStacks.length})
+            </button>
+          </div>
+
+          {visibleStacks.length === 0 && (
+            <div className="no-history">
+              <p>{tab === 'archived' ? 'No archived hangouts yet.' : 'No active hangouts.'}</p>
+              {tab === 'archived' && <p>Tap 📦 on a hangout to archive it once everyone is settled.</p>}
+            </div>
+          )}
+
           <div className="stack-list">
-            {stacks.map((stack, index) => (
+            {visibleStacks.map(({ stack, index }) => (
               <div 
                 key={stack.id} 
                 className={`stack-item ${index === currentStackIndex ? 'active-stack' : ''}`}
@@ -714,6 +746,19 @@ function StackManager({ stacks, currentStackIndex, onSwitchStack, onCreateStack,
                       </div>
                     </div>
                     <div className="stack-actions">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUpdateStack(index, {
+                            archived: !stack.archived,
+                            archivedAt: stack.archived ? null : new Date().toISOString()
+                          });
+                        }}
+                        className="edit-stack-btn"
+                        title={stack.archived ? 'Restore to active' : 'Archive'}
+                      >
+                        {stack.archived ? '♻️' : '📦'}
+                      </button>
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
