@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFriends } from '../FriendsContext';
 
-function OverallBalanceCard({ balances, friends, completedReceipts, onShareStack, isReadOnly, stackName }) {
+function OverallBalanceCard({ balances, friends, completedReceipts, onShareStack, isReadOnly, stackName, meId, settled = {}, onToggleSettled }) {
   const { getName } = useFriends();
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareLink, setShareLink] = useState('');
@@ -160,9 +160,26 @@ function OverallBalanceCard({ balances, friends, completedReceipts, onShareStack
               {consolidatedDebts.map((debt, index) => {
                 const fromName = getName(debt.from);
                 const toName = getName(debt.to);
+                const settleKey = `${debt.from}->${debt.to}`;
+                const amountStr = debt.amount.toFixed(2);
+                // Settled only counts while the amount is unchanged
+                const isSettled = settled[settleKey] === amountStr;
+                const involvesMe = !!meId && friends.includes(meId) && (debt.from === meId || debt.to === meId);
+                const iOwe = debt.from === meId;
                 
                 return (
                   <div key={index} className="transaction-item">
+                    {!isReadOnly && involvesMe && onToggleSettled && (
+                      <label className="settle-check">
+                        <input
+                          type="checkbox"
+                          checked={isSettled}
+                          onChange={(e) => onToggleSettled(settleKey, amountStr, e.target.checked)}
+                        />
+                        <span>{iOwe ? 'I paid' : 'Paid me'}</span>
+                      </label>
+                    )}
+                    {isReadOnly && isSettled && <span className="settled-badge">✓ Settled</span>}
                     <div className="transaction-details">
                       <span className="transaction-from">{fromName}</span>
                       <span className="transaction-arrow">→</span>

@@ -12,6 +12,9 @@ function ReceiptCarousel({
   overallBalanceData,
   isReadOnly = false,
   onShareStack,
+  meId,
+  settled,
+  onToggleSettled,
   stackName
 }) {
   const touchStartX = useRef(0);
@@ -148,6 +151,9 @@ function ReceiptCarousel({
               friends={friends}
               completedReceipts={card.completedReceipts}
               onShareStack={onShareStack}
+              meId={meId}
+              settled={settled}
+              onToggleSettled={onToggleSettled}
               isReadOnly={isReadOnly}
               stackName={stackName}
             />

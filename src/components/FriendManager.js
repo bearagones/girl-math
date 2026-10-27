@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { COLOR_PALETTE } from '../FriendsContext';
 
-function FriendManager({ friends, onSave, onClose }) {
+function FriendManager({ friends, meId, onSave, onClose }) {
+  const [me, setMe] = useState(meId || '');
   const [draft, setDraft] = useState(friends.map((f) => ({ ...f })));
 
   const updateFriend = (id, updates) => {
@@ -26,7 +27,7 @@ function FriendManager({ friends, onSave, onClose }) {
     const cleaned = draft
       .map((f) => ({ ...f, name: f.name.trim() }))
       .filter((f) => f.name.length > 0);
-    onSave(cleaned);
+    onSave(cleaned, cleaned.some((f) => f.id === me) ? me : '');
     onClose();
   };
 
@@ -81,6 +82,15 @@ function FriendManager({ friends, onSave, onClose }) {
                     value={f.colorB}
                     onChange={(e) => updateFriend(f.id, { colorB: e.target.value })}
                   />
+                </label>
+                <label className="friend-me-radio" title="This is me (only you get 'paid' checkboxes)">
+                  <input
+                    type="radio"
+                    name="me"
+                    checked={me === f.id}
+                    onChange={() => setMe(f.id)}
+                  />
+                  <span>Me</span>
                 </label>
                 <button className="delete-stack-btn" onClick={() => removeFriend(f.id)} title="Remove">
                   🗑️

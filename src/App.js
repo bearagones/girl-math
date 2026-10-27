@@ -18,7 +18,7 @@ const generateShareId = () => {
   return result;
 };
 
-function AppContent({ friendList, ownFriends, setFriendList, setSharedFriends }) {
+function AppContent({ friendList, ownFriends, setFriendList, setSharedFriends, meId, setMeId }) {
   const friends = friendList.map((f) => f.id);
   const [showFriendManager, setShowFriendManager] = useState(
     ownFriends.length === 0 && !/^\/[A-Z0-9]{6}$/.test(window.location.pathname)
@@ -181,7 +181,8 @@ function AppContent({ friendList, ownFriends, setFriendList, setSharedFriends })
   }, [stacks]);
 
   // Save an edited friends list; add newly added people to any unsaved receipts
-  const updateFriends = (newList) => {
+  const updateFriends = (newList, newMeId) => {
+    if (newMeId !== undefined) setMeId(newMeId);
     const oldIds = ownFriends.map((f) => f.id);
     const addedIds = newList.map((f) => f.id).filter((id) => !oldIds.includes(id));
     setFriendList(newList);
@@ -201,6 +202,15 @@ function AppContent({ friendList, ownFriends, setFriendList, setSharedFriends })
         })
       })));
     }
+  };
+
+  // Mark a net transaction as paid/unpaid (stored per hangout; amount kept so changes un-settle it)
+  const toggleSettled = (key, amountStr, checked) => {
+    const current = (stacks[currentStackIndex] && stacks[currentStackIndex].settled) || {};
+    const next = { ...current };
+    if (checked) next[key] = amountStr;
+    else delete next[key];
+    updateStackInfo(currentStackIndex, { settled: next });
   };
 
   const createStack = (name, date) => ({
@@ -400,6 +410,7 @@ function AppContent({ friendList, ownFriends, setFriendList, setSharedFriends })
         stackName: stack.name,
         stackDate: stack.date,
         friends: ownFriends,
+        settled: stack.settled || {},
         receipts: completedReceipts,
         sharedAt: new Date().toISOString()
       };
@@ -473,6 +484,7 @@ function AppContent({ friendList, ownFriends, setFriendList, setSharedFriends })
           overallBalanceData={sharedOverallData}
           isReadOnly={true}
           stackName={sharedStack.stackName}
+          settled={sharedStack.settled || {}}
           shareId={window.location.pathname.substring(1)}
         />
         
@@ -517,6 +529,9 @@ function AppContent({ friendList, ownFriends, setFriendList, setSharedFriends })
         overallBalanceData={overallBalanceData}
         isReadOnly={false}
         onShareStack={shareCurrentStack}
+        meId={meId}
+        settled={(currentStack && currentStack.settled) || {}}
+        onToggleSettled={toggleSettled}
       />
       
       <button 
@@ -563,6 +578,7 @@ function AppContent({ friendList, ownFriends, setFriendList, setSharedFriends })
       {showFriendManager && (
         <FriendManager
           friends={ownFriends}
+          meId={meId}
           onSave={updateFriends}
           onClose={() => setShowFriendManager(false)}
         />
@@ -813,6 +829,12 @@ function App() {
     localStorage.setItem('girlMathFriends', JSON.stringify(friendList));
   }, [friendList]);
 
+  const [meId, setMeId] = useState(() => localStorage.getItem('girlMathMe') || '');
+
+  useEffect(() => {
+    localStorage.setItem('girlMathMe', meId);
+  }, [meId]);
+
   const displayed = sharedFriends || friendList;
   const api = useMemo(() => buildFriendsApi(displayed), [displayed]);
 
@@ -823,6 +845,8 @@ function App() {
         ownFriends={friendList}
         setFriendList={setFriendList}
         setSharedFriends={setSharedFriends}
+        meId={meId}
+        setMeId={setMeId}
       />
     </FriendsProvider>
   );
